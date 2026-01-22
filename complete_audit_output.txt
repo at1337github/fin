@@ -1,0 +1,91 @@
+============================================================
+COMPLETE AUDIT CREATION
+============================================================
+Processing Date: 2026-01-22 06:25:03
+
+============================================================
+LOADING SOURCE FILES
+============================================================
+
+============================================================
+NORMALIZING AND CLEANING DATA
+============================================================
+
+Processing Personal...
+  Initial transactions: 4817
+  After exclusions: 1663 included
+
+Processing Business/Main...
+  Initial transactions: 4333
+  After exclusions: 1656 included
+
+Processing Cash App...
+  Initial transactions: 1218
+/home/user/fin/create_complete_audit.py:85: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  normalized['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+  After exclusions: 394 included
+
+Processing Cash App...
+  Initial transactions: 1376
+/home/user/fin/create_complete_audit.py:85: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  normalized['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+  After exclusions: 475 included
+
+============================================================
+COMBINING ALL SOURCES
+============================================================
+Total combined transactions: 11744
+  Included: 4188
+  Excluded: 7556
+
+Deduplicating transactions...
+  Removed 3252 duplicates
+  Remaining transactions: 8492
+
+============================================================
+CATEGORIZING TRANSACTIONS
+============================================================
+
+Category Breakdown (Included only):
+Category
+Other/Uncategorized    2164
+Tech & Subs             352
+Transportation          277
+Grocery/Daily           212
+Delivery                 99
+Services/Laundry         10
+Entertainment             1
+Name: count, dtype: int64
+
+============================================================
+FINAL SUMMARY
+============================================================
+
+✓ Total transactions processed: 8492
+✓ Included (True Spend): 3115
+✓ Excluded: 5377
+
+Source Breakdown:
+Source
+Personal         4089
+Business/Main    3591
+Cash App          812
+Name: count, dtype: int64
+
+Exclusion Reasons:
+Exclusion_Reason
+Non-Finalized (Status: Pending)                 2321
+Money In / Refund                               2319
+Non-Finalized (Status: Denied)                   356
+Non-Finalized (Status: FAILED)                   173
+Transfer / Noise                                  97
+Non-Finalized (Status: Reversed)                  86
+Non-Finalized (Status: WAITING_ON_RECIPIENT)      16
+Non-Finalized (Status: Canceled)                   6
+Non-Finalized (Status: Removed)                    3
+Name: count, dtype: int64
+
+💰 Total True Spend: $-133,838.62
+
+✓ Complete audit saved to: Complete_Audit_PayPal_CashApp.csv
+✓ Analysis complete!
