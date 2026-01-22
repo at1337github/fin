@@ -1,0 +1,139 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Spending Dashboard - July to December 2025</title>
+        <style>
+            body {
+                font-family: 'Arial', sans-serif;
+                background-color: #FAFAFA;
+                color: #2C3E50;
+                margin: 0;
+                padding: 20px;
+            }
+            .header {
+                text-align: center;
+                padding: 30px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-radius: 15px;
+                margin-bottom: 30px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+            .header h1 {
+                margin: 0;
+                font-size: 42px;
+                font-weight: bold;
+            }
+            .header p {
+                margin: 10px 0 0 0;
+                font-size: 18px;
+                opacity: 0.9;
+            }
+            .container {
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+            .chart {
+                background: white;
+                border-radius: 15px;
+                padding: 20px;
+                margin-bottom: 30px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .insight-box {
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                color: white;
+                padding: 25px;
+                border-radius: 15px;
+                margin: 30px 0;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+            .insight-box h2 {
+                margin-top: 0;
+                font-size: 24px;
+            }
+            .insight-box ul {
+                margin: 10px 0;
+                padding-left: 20px;
+                font-size: 16px;
+                line-height: 1.8;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>💰 Spending Dashboard</h1>
+                <p>July to December 2025 • 6 Month Analysis</p>
+            </div>
+
+            
+    <div style="display: flex; justify-content: space-around; padding: 20px; background: white; border-radius: 10px; margin: 20px 0;">
+        <div style="text-align: center;">
+            <div style="font-size: 14px; color: #7f8c8d;">Total Spending</div>
+            <div style="font-size: 36px; font-weight: bold; color: #2C3E50;">$31,734</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 14px; color: #7f8c8d;">Monthly Average</div>
+            <div style="font-size: 36px; font-weight: bold; color: #2C3E50;">$5,289</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 14px; color: #7f8c8d;">Transactions</div>
+            <div style="font-size: 36px; font-weight: bold; color: #2C3E50;">1404</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 14px; color: #7f8c8d;">Avg per Transaction</div>
+            <div style="font-size: 36px; font-weight: bold; color: #2C3E50;">$23</div>
+        </div>
+    </div>
+    
+
+            <div class="insight-box">
+                <h2>🎯 Key Insights</h2>
+                <ul>
+                    <li><strong>Transportation dominates spending</strong> at 21.6% ($6,861), including rideshares, transit, and car rentals - your biggest expense category</li>
+                    <li><strong>Daily essentials add up</strong>: Grocery/Daily (15.1%, $4,789) + Dining (7.3%, $2,314) + Fast Food (3.3%, $1,049) + Delivery (3.8%, $1,205) = 29.5% of total spend</li>
+                    <li><strong>Peak spending month</strong> was August ($7,306), while October was lowest ($3,465) - a 2.1x difference</li>
+                    <li><strong>Top 4 categories</strong> (Transportation, Grocery, Financial Services, Dining) account for 53% of all spending</li>
+                    <li><strong>Transaction frequency</strong>: 1,404 transactions over 6 months = 234 per month (7.8 per day)</li>
+                </ul>
+            </div>
+
+            <div class="chart">
+                <iframe src="viz_heavy_hitters.html" width="100%" height="500px" frameborder="0"></iframe>
+            </div>
+
+            <div class="chart">
+                <iframe src="viz_monthly_trends.html" width="100%" height="550px" frameborder="0"></iframe>
+            </div>
+
+            <div class="chart">
+                <iframe src="viz_category_breakdown.html" width="100%" height="550px" frameborder="0"></iframe>
+            </div>
+
+            <div class="chart">
+                <iframe src="viz_category_insights.html" width="100%" height="550px" frameborder="0"></iframe>
+            </div>
+
+            <div class="chart">
+                <iframe src="viz_monthly_flow.html" width="100%" height="650px" frameborder="0"></iframe>
+            </div>
+
+            <div class="chart">
+                <iframe src="viz_daily_intensity.html" width="100%" height="450px" frameborder="0"></iframe>
+            </div>
+
+            <div class="insight-box">
+                <h2>📊 Spending Patterns</h2>
+                <ul>
+                    <li><strong>Monthly variance:</strong> Spending fluctuates between $3,465 and $7,306 - suggest budgeting for ~$5,300/month</li>
+                    <li><strong>Category concentration:</strong> Heavy reliance on transportation suggests opportunity for cost optimization</li>
+                    <li><strong>Food spending:</strong> Combined food costs (Grocery + Dining + Fast Food + Delivery) total $9,356 (29.5%)</li>
+                    <li><strong>Financial services:</strong> $2,885 in BNPL and fees - consider cash flow management strategies</li>
+                </ul>
+            </div>
+        </div>
+    </body>
+    </html>
+    
