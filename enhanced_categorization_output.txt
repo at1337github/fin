@@ -1,0 +1,137 @@
+============================================================
+ENHANCED CATEGORIZATION
+============================================================
+
+Original Category Breakdown:
+Category
+Other/Uncategorized    2164
+Tech & Subs             352
+Transportation          277
+Grocery/Daily           212
+Delivery                 99
+Services/Laundry         10
+Entertainment             1
+Name: count, dtype: int64
+
+Applying enhanced categorization...
+
+Enhanced Category Breakdown:
+Category
+Other/Uncategorized    537
+Grocery/Daily          464
+Financial Services     434
+TRANSFER_TO_REVIEW     432
+Tech & Subs            356
+Transportation         338
+Dining/Restaurants     170
+Fast Food              156
+Delivery                90
+Phone/Utilities         55
+Services/Laundry        41
+Retail/Shopping         23
+Home/Hardware            9
+ATM/Cash                 7
+Healthcare               2
+Entertainment            1
+Name: count, dtype: int64
+
+Categorization Coverage: 82.8%
+Still Uncategorized: 537 (17.2%)
+
+⚠ Found 432 potential P2P transfers flagged for review
+
+Top flagged transactions:
+Name
+Aizihaer Tuerxuntuoheti    308
+CASH APP*AIZIHAER TUER     124
+dtype: int64
+
+✓ Enhanced audit saved to: Complete_Audit_Enhanced.csv
+
+============================================================
+CATEGORY SUMMARY
+============================================================
+
+ATM/Cash: 7 transactions (0.2%)
+  Total: $-341.00
+  Avg: $-48.71
+
+Delivery: 90 transactions (2.9%)
+  Total: $-2,246.71
+  Avg: $-24.96
+
+Dining/Restaurants: 170 transactions (5.5%)
+  Total: $-2,790.77
+  Avg: $-16.42
+
+Entertainment: 1 transactions (0.0%)
+  Total: $-114.76
+  Avg: $-114.76
+
+Fast Food: 156 transactions (5.0%)
+  Total: $-1,570.08
+  Avg: $-10.06
+
+Financial Services: 434 transactions (13.9%)
+  Total: $-26,788.61
+  Avg: $-61.72
+
+Grocery/Daily: 464 transactions (14.9%)
+  Total: $-6,248.38
+  Avg: $-13.47
+
+Healthcare: 2 transactions (0.1%)
+  Total: $-4.40
+  Avg: $-2.20
+
+Home/Hardware: 9 transactions (0.3%)
+  Total: $-360.20
+  Avg: $-40.02
+
+Phone/Utilities: 55 transactions (1.8%)
+  Total: $-1,323.12
+  Avg: $-24.06
+
+Retail/Shopping: 23 transactions (0.7%)
+  Total: $-1,915.61
+  Avg: $-83.29
+
+Services/Laundry: 41 transactions (1.3%)
+  Total: $-762.01
+  Avg: $-18.59
+
+TRANSFER_TO_REVIEW: 432 transactions (13.9%)
+  Total: $-31,573.88
+  Avg: $-73.09
+
+Tech & Subs: 356 transactions (11.4%)
+  Total: $-24,566.03
+  Avg: $-69.01
+
+Transportation: 338 transactions (10.9%)
+  Total: $-9,583.82
+  Avg: $-28.35
+
+============================================================
+TOP 20 REMAINING UNCATEGORIZED MERCHANTS
+============================================================
+  16  HERCULES CORP KIOSK
+  16  Lenz's
+  14  BOUND BROOK CONVENIENC
+   8  ONE*FINANCE
+   7  Liberty Vending LLC
+   6  TRTHFDR*TRUTHFINDER
+   6  NOSTRAND SMELL SO SWEE
+   6  Nayax **Franchard Nels
+   6  61620 - BROOKLYN R
+   6  CPI*CPI*CANTEEN VENDIN
+   6  REVEL* CAR
+   6  REVEL* (TEMP PRE-AUTH)
+   6  PAI ISO
+   6  PY *MANHATTAN MINI 198
+   6  WAWA 8397
+   5  Customer Service - Epoch
+   5  GoDaddy.com, LLC
+   4  SPK*SPOKEO SEARCH
+   4  PAYPRO *NEKTONY
+   4  FOUR*PLUS*SUBSCRIPTION

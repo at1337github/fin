@@ -1,0 +1,181 @@
+============================================================
+CORRECTED AUDIT - AFTER JUNE 2025
+============================================================
+
+Original audit:
+  Total transactions: 8492
+  Date range: 2025-01-01 to 2025-12-31
+
+After filtering to post-June 2025:
+  Total transactions: 4894
+  Date range: 2025-07-01 to 2025-12-31
+
+============================================================
+DETECTING ADDITIONAL TRANSFERS
+============================================================
+
+Found 165 additional transfers:
+         count      sum
+Name                   
+REB NYC    165 -15531.5
+
+Total transfer amount: $-15,531.50
+
+============================================================
+APPLYING CORRECTED CATEGORIZATION
+============================================================
+
+============================================================
+CORRECTED AUDIT STATISTICS (AFTER JUNE 2025)
+============================================================
+
+Total transactions: 4894
+Included (True Spend): 1404
+Excluded: 3490
+
+💰 Total True Spend (July-Dec 2025): $-31,734.23
+
+Exclusion Breakdown:
+Exclusion_Reason
+Non-Finalized (Status: Pending)     1562
+Money In / Refund                   1292
+Transfer / Noise                     388
+Non-Finalized (Status: Denied)       190
+Non-Finalized (Status: Reversed)      52
+Non-Finalized (Status: Canceled)       4
+Non-Finalized (Status: Removed)        2
+Name: count, dtype: int64
+
+Category Breakdown (Included only):
+Category
+Grocery/Daily          330
+Transportation         247
+Other/Uncategorized    245
+Dining/Restaurants     145
+Financial Services     115
+Fast Food               90
+Tech & Subs             87
+Delivery                50
+Services/Laundry        29
+Phone/Utilities         26
+Retail/Shopping         16
+Vending/Snacks          12
+ATM/Cash                 6
+Home/Hardware            4
+Healthcare               2
+Name: count, dtype: int64
+
+Categorization Coverage: 82.5%
+
+✓ Corrected audit saved to: Corrected_Audit_Post_June_2025.csv
+
+============================================================
+SPENDING BY CATEGORY (JULY-DEC 2025)
+============================================================
+
+ATM/Cash
+  Transactions: 6 (0.4%)
+  Total: $-155.00
+  Average: $-25.83
+
+Delivery
+  Transactions: 50 (3.6%)
+  Total: $-1,204.99
+  Average: $-24.10
+
+Dining/Restaurants
+  Transactions: 145 (10.3%)
+  Total: $-2,314.00
+  Average: $-15.96
+
+Fast Food
+  Transactions: 90 (6.4%)
+  Total: $-1,048.84
+  Average: $-11.65
+
+Financial Services
+  Transactions: 115 (8.2%)
+  Total: $-2,929.34
+  Average: $-25.47
+
+Grocery/Daily
+  Transactions: 330 (23.5%)
+  Total: $-4,788.66
+  Average: $-14.51
+
+Healthcare
+  Transactions: 2 (0.1%)
+  Total: $-4.40
+  Average: $-2.20
+
+Home/Hardware
+  Transactions: 4 (0.3%)
+  Total: $-60.58
+  Average: $-15.14
+
+Phone/Utilities
+  Transactions: 26 (1.9%)
+  Total: $-560.01
+  Average: $-21.54
+
+Retail/Shopping
+  Transactions: 16 (1.1%)
+  Total: $-977.68
+  Average: $-61.10
+
+Services/Laundry
+  Transactions: 29 (2.1%)
+  Total: $-712.40
+  Average: $-24.57
+
+Tech & Subs
+  Transactions: 87 (6.2%)
+  Total: $-1,525.92
+  Average: $-17.54
+
+Transportation
+  Transactions: 247 (17.6%)
+  Total: $-6,724.84
+  Average: $-27.23
+
+Vending/Snacks
+  Transactions: 12 (0.9%)
+  Total: $-40.50
+  Average: $-3.38
+
+============================================================
+TOP 15 REMAINING UNCATEGORIZED (245 total)
+============================================================
+  24  $ -319.22  DM 561
+  10  $ -127.86  BOUND BROOK CONVENIENC
+   6  $ -189.18  NOSTRAND SMELL SO SWEE
+   6  $ -190.00  61620 - BROOKLYN R
+   4  $  -51.96  FOUR*PLUS*SUBSCRIPTION
+   4  $  -66.60  THE VILLAGE SMOKE LOFT
+   4  $  -11.60  OMNYPYG*
+   4  $  -30.20  QUICK CHEK FOOD
+   4  $   -8.84  WILLIAMSBURG ORGANIC D
+   4  $  -80.25  GB License, LLC
+   4  $   -9.00  Nayax **Divine Snacks
+   4  $  -25.34  PANERA BREAD #609331
+   4  $   -5.10  Nayax **Franchard Nels
+   4  $  -55.30  Queensboro Car Wash
+   4  $ -253.98  Dicks Sporting Goods
+
+============================================================
+COMPARISON: ORIGINAL vs CORRECTED
+============================================================
+
+Original (post-June 2025):
+  True Spend Transactions: 1569
+  True Spend Amount: $-47,265.73
+
+Corrected (post-June 2025):
+  True Spend Transactions: 1404
+  True Spend Amount: $-31,734.23
+
+Difference:
+  Transactions: -165 (-10.5%)
+  Amount: $15,531.50
+
+✓ Analysis complete!
