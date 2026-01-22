@@ -50,8 +50,8 @@ def analyze_data_structure(df, name):
     return df
 
 
-def compare_transactions(audit_df, personal_df, business_df=None):
-    """Compare audit file with personal and business transactions."""
+def compare_transactions(audit_df, personal_df):
+    """Compare audit file with personal transactions."""
     print(f"\n{'='*60}")
     print("TRANSACTION COMPARISON ANALYSIS")
     print(f"{'='*60}")
@@ -62,7 +62,6 @@ def compare_transactions(audit_df, personal_df, business_df=None):
 
     # Convert amounts to float for comparison
     audit_df['Amount_Float'] = pd.to_numeric(audit_df['Amount'], errors='coerce')
-    # Personal file uses 'Total', Business file uses 'Net'
     personal_df['Total_Float'] = pd.to_numeric(personal_df['Total'], errors='coerce')
 
     print(f"\nAudit File Stats:")
@@ -74,16 +73,6 @@ def compare_transactions(audit_df, personal_df, business_df=None):
     print(f"  Total Transactions: {len(personal_df)}")
     print(f"  Date Range: {personal_df['Date_Clean'].min()} to {personal_df['Date_Clean'].max()}")
     print(f"  Total Amount: ${personal_df['Total_Float'].sum():,.2f}")
-
-    # Business file stats if available
-    if business_df is not None:
-        business_df['Date_Clean'] = pd.to_datetime(business_df['Date'], errors='coerce')
-        # Business file uses 'Net' column instead of 'Total'
-        business_df['Total_Float'] = pd.to_numeric(business_df['Net'], errors='coerce')
-        print(f"\nBusiness File Stats:")
-        print(f"  Total Transactions: {len(business_df)}")
-        print(f"  Date Range: {business_df['Date_Clean'].min()} to {business_df['Date_Clean'].max()}")
-        print(f"  Total Amount: ${business_df['Total_Float'].sum():,.2f}")
 
     # Analysis Status breakdown
     print(f"\n{'='*60}")
@@ -121,45 +110,24 @@ def compare_transactions(audit_df, personal_df, business_df=None):
 
     # Try to match transactions by date and amount
     matched = 0
-    matched_personal = 0
-    matched_business = 0
     unmatched_audit = []
 
     for idx, audit_row in audit_df.iterrows():
         audit_date = audit_row['Date_Clean']
         audit_amount = audit_row['Amount_Float']
-        found = False
 
         # Look for matching transaction in personal file
-        personal_matches = personal_df[
+        matches = personal_df[
             (personal_df['Date_Clean'] == audit_date) &
             (personal_df['Total_Float'] == audit_amount)
         ]
 
-        if len(personal_matches) > 0:
+        if len(matches) > 0:
             matched += 1
-            matched_personal += 1
-            found = True
-
-        # If business file exists, check there too
-        if not found and business_df is not None:
-            business_matches = business_df[
-                (business_df['Date_Clean'] == audit_date) &
-                (business_df['Total_Float'] == audit_amount)
-            ]
-
-            if len(business_matches) > 0:
-                matched += 1
-                matched_business += 1
-                found = True
-
-        if not found:
+        else:
             unmatched_audit.append(audit_row)
 
-    print(f"Total Matched Transactions: {matched} ({matched/len(audit_df)*100:.2f}%)")
-    print(f"  - Matched with Personal: {matched_personal}")
-    if business_df is not None:
-        print(f"  - Matched with Business: {matched_business}")
+    print(f"Matched Transactions: {matched} ({matched/len(audit_df)*100:.2f}%)")
     print(f"Unmatched in Audit: {len(unmatched_audit)} ({len(unmatched_audit)/len(audit_df)*100:.2f}%)")
 
     # Check for transactions in personal not in audit
@@ -178,30 +146,14 @@ def compare_transactions(audit_df, personal_df, business_df=None):
 
     print(f"Transactions in Personal not in Audit: {unmatched_personal}")
 
-    # Check for transactions in business not in audit
-    unmatched_business = 0
-    if business_df is not None:
-        for idx, business_row in business_df.iterrows():
-            bus_date = business_row['Date_Clean']
-            bus_amount = business_row['Total_Float']
-
-            matches = audit_df[
-                (audit_df['Date_Clean'] == bus_date) &
-                (audit_df['Amount_Float'] == bus_amount)
-            ]
-
-            if len(matches) == 0:
-                unmatched_business += 1
-
-        print(f"Transactions in Business not in Audit: {unmatched_business}")
-
     # Additional data sources analysis
     print(f"\n{'='*60}")
-    print("DATA SOURCE VERIFICATION")
+    print("ADDITIONAL DATA SOURCES ANALYSIS")
     print(f"{'='*60}")
 
     if len(unmatched_audit) > 0:
-        print(f"\nFound {len(unmatched_audit)} transactions in audit that don't match source files.")
+        print(f"\nFound {len(unmatched_audit)} transactions in audit that don't match personal file.")
+        print(f"This suggests there may be additional data sources.")
 
         # Check if these are from business source
         if 'Source' in audit_df.columns:
@@ -210,11 +162,8 @@ def compare_transactions(audit_df, personal_df, business_df=None):
                 unmatched_sources = unmatched_df['Source'].value_counts()
                 print(f"\nSources of unmatched transactions:")
                 print(unmatched_sources)
-    else:
-        print("\n✓ All audit transactions successfully matched with source files!")
-        print("✓ Data verification complete - 100% match rate achieved!")
 
-    return matched, len(unmatched_audit), unmatched_personal, unmatched_business if business_df is not None else 0
+    return matched, len(unmatched_audit), unmatched_personal
 
 
 def analyze_data_consistency(audit_df):
@@ -254,7 +203,6 @@ def main():
 
     audit_df = load_csv_safely('PayPal_True_Spend_Audit.csv')
     personal_df = load_csv_safely('personal-6.CSV')
-    business_df = load_csv_safely('business_paypal-6.CSV')
 
     if audit_df is None or personal_df is None:
         print("Error: Could not load required files")
@@ -264,14 +212,8 @@ def main():
     audit_df = analyze_data_structure(audit_df, "PayPal True Spend Audit")
     personal_df = analyze_data_structure(personal_df, "Personal PayPal Transactions")
 
-    if business_df is not None and len(business_df) > 0:
-        business_df = analyze_data_structure(business_df, "Business PayPal Transactions")
-    else:
-        print("\n⚠ Warning: Business file not found or empty")
-        business_df = None
-
     # Compare transactions
-    matched, unmatched_audit, unmatched_personal, unmatched_business = compare_transactions(audit_df, personal_df, business_df)
+    matched, unmatched_audit, unmatched_personal = compare_transactions(audit_df, personal_df)
 
     # Analyze data quality
     analyze_data_consistency(audit_df)
@@ -282,34 +224,23 @@ def main():
     print(f"{'='*60}")
     print(f"\n✓ Audit file contains {len(audit_df)} total transactions")
     print(f"✓ Personal file contains {len(personal_df)} total transactions")
-    if business_df is not None:
-        print(f"✓ Business file contains {len(business_df)} total transactions")
-    print(f"✓ {matched} transactions matched between audit and source files")
-    print(f"✓ {unmatched_audit} transactions in audit not found in source files")
+    print(f"✓ {matched} transactions matched between files")
+    print(f"✓ {unmatched_audit} transactions in audit not found in personal file")
     print(f"✓ {unmatched_personal} transactions in personal not found in audit file")
-    if business_df is not None:
-        print(f"✓ {unmatched_business} transactions in business not found in audit file")
 
     print(f"\n{'='*60}")
     print("CONCLUSIONS")
     print(f"{'='*60}")
 
-    if unmatched_audit == 0:
-        print(f"\n✓ SUCCESS: All audit transactions verified against source files!")
-        print(f"✓ Match rate: 100% ({matched}/{len(audit_df)} transactions)")
-        print(f"✓ Data integrity confirmed across all sources")
-    elif unmatched_audit > 0:
-        print(f"\n⚠ Partial match: {matched}/{len(audit_df)} transactions verified")
-        print(f"  Match rate: {matched/len(audit_df)*100:.2f}%")
-        print(f"  {unmatched_audit} transactions still unmatched")
-        print(f"  Recommendation: Investigate unmatched transactions")
+    if unmatched_audit > 0:
+        print(f"\n⚠ The audit file contains transactions not present in the personal file.")
+        print(f"  This indicates additional data sources are being used.")
+        print(f"  Note: business_paypal-6.CSV file is empty (0 bytes)")
+        print(f"  Recommendation: Verify if there's a business PayPal account file that should be included.")
 
-    if unmatched_personal > 0 or unmatched_business > 0:
-        print(f"\n⚠ Source files contain transactions not in audit:")
-        if unmatched_personal > 0:
-            print(f"  Personal: {unmatched_personal} transactions")
-        if unmatched_business > 0:
-            print(f"  Business: {unmatched_business} transactions")
+    if len(audit_df) > len(personal_df):
+        print(f"\n⚠ Audit file has MORE transactions than the personal file.")
+        print(f"  Difference: {len(audit_df) - len(personal_df)} transactions")
 
     print(f"\n✓ Analysis complete!")
 
@@ -321,18 +252,9 @@ def main():
         f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
         f.write(f"Audit Transactions: {len(audit_df)}\n")
         f.write(f"Personal Transactions: {len(personal_df)}\n")
-        if business_df is not None:
-            f.write(f"Business Transactions: {len(business_df)}\n")
-        f.write(f"\nMatched: {matched} ({matched/len(audit_df)*100:.2f}%)\n")
+        f.write(f"Matched: {matched}\n")
         f.write(f"Unmatched in Audit: {unmatched_audit}\n")
         f.write(f"Unmatched in Personal: {unmatched_personal}\n")
-        if business_df is not None:
-            f.write(f"Unmatched in Business: {unmatched_business}\n")
-
-        if unmatched_audit == 0:
-            f.write("\n✓ SUCCESS: 100% match rate achieved!\n")
-            f.write("✓ All audit transactions verified against source files.\n")
-
         f.write("\nConclusion: See console output for detailed analysis.\n")
 
     print(f"\n📄 Report saved to: ANALYSIS_REPORT.txt")
