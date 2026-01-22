@@ -1,12 +1,15 @@
 ============================================================
 PAYPAL AUDIT ANALYSIS REPORT
 ============================================================
-Generated: 2026-01-22 05:52:19
+Generated: 2026-01-22 06:09:27
 
 Audit Transactions: 9150
 Personal Transactions: 4817
-Matched: 5017
-Unmatched in Audit: 4133
+Business Transactions: 4333
+
+Matched: 9148 (99.98%)
+Unmatched in Audit: 2
 Unmatched in Personal: 2
+Unmatched in Business: 0
 
 Conclusion: See console output for detailed analysis.

@@ -1,0 +1,275 @@
+============================================================
+PAYPAL AUDIT ANALYSIS
+============================================================
+Analysis Date: 2026-01-22 06:09:14
+
+Loading data files...
+
+============================================================
+STRUCTURE: PayPal True Spend Audit
+============================================================
+Rows: 9150
+Columns: 9
+
+Column Names:
+  1. Date
+  2. Name
+  3. Amount
+  4. Analysis_Status
+  5. Exclusion_Reason
+  6. Category
+  7. Source
+  8. Type
+  9. Status
+
+Data Types:
+Date                    str
+Name                    str
+Amount              float64
+Analysis_Status         str
+Exclusion_Reason        str
+Category                str
+Source                  str
+Type                    str
+Status                  str
+dtype: object
+
+First 3 rows:
+         Date                     Name  Amount Analysis_Status                Exclusion_Reason  Category         Source                  Type     Status
+0  01/02/2025  Aizihaer Tuerxuntuoheti  -62.04        Excluded                Transfer / Noise  Excluded  Business/Main        Mobile Payment  Completed
+1  01/02/2025                      NaN   62.04        Excluded               Money In / Refund  Excluded  Business/Main  General Card Deposit  Completed
+2  01/02/2025                      NaN    9.24        Excluded  Non-Finalized (Status: Denied)  Excluded  Business/Main  General Card Deposit     Denied
+
+============================================================
+STRUCTURE: Personal PayPal Transactions
+============================================================
+Rows: 4817
+Columns: 15
+
+Column Names:
+  1. Date
+  2. Time
+  3. TimeZone
+  4. Name
+  5. Type
+  6. Status
+  7. Currency
+  8. Gross
+  9. Fees
+  10. Total
+  11. Exchange Rate
+  12. Receipt ID
+  13. Balance
+  14. Transaction ID
+  15. Item Title
+
+Data Types:
+Date                  str
+Time                  str
+TimeZone              str
+Name                  str
+Type                  str
+Status                str
+Currency              str
+Gross                 str
+Fees              float64
+Total                 str
+Exchange Rate     float64
+Receipt ID        float64
+Balance               str
+Transaction ID        str
+Item Title            str
+dtype: object
+
+First 3 rows:
+         Date      Time TimeZone      Name                                   Type     Status Currency   Gross  Fees   Total  Exchange Rate  Receipt ID Balance     Transaction ID Item Title
+0  01/01/2025  02:43:23      PST  SNIFFIES  General PayPal Debit Card Transaction  Completed      USD  -15.99   0.0  -15.99            NaN         NaN  -15.78  64P466732S0188004        NaN
+1  01/01/2025  02:43:23      PST    PayPal       Reversal of General Account Hold  Completed      USD   15.99   0.0   15.99            NaN         NaN    0.21  94C507872W7957949        NaN
+2  01/01/2025  02:43:23      PST  SNIFFIES                  General Authorization  Completed      USD  -15.99   0.0  -15.99            NaN         NaN    0.21  3CR06600AV550940W        NaN
+
+============================================================
+STRUCTURE: Business PayPal Transactions
+============================================================
+Rows: 4333
+Columns: 25
+
+Column Names:
+  1. Date
+  2. Time
+  3. TimeZone
+  4. Name
+  5. Type
+  6. Status
+  7. Currency
+  8. Gross
+  9. Fee
+  10. Net
+  11. From Email Address
+  12. To Email Address
+  13. Transaction ID
+  14. Item Title
+  15. Item ID
+  16. Option 1 Name
+  17. Option 1 Value
+  18. Option 2 Name
+  19. Option 2 Value
+  20. Reference Txn ID
+  21. Custom Number
+  22. Quantity
+  23. Receipt ID
+  24. Balance
+  25. Subject
+
+Data Types:
+Date                      str
+Time                      str
+TimeZone                  str
+Name                      str
+Type                      str
+Status                    str
+Currency                  str
+Gross                 float64
+Fee                   float64
+Net                   float64
+From Email Address        str
+To Email Address          str
+Transaction ID            str
+Item Title                str
+Item ID                   str
+Option 1 Name         float64
+Option 1 Value        float64
+Option 2 Name         float64
+Option 2 Value        float64
+Reference Txn ID          str
+Custom Number         float64
+Quantity              float64
+Receipt ID            float64
+Balance                   str
+Subject                   str
+dtype: object
+
+First 3 rows:
+         Date      Time TimeZone                     Name                  Type     Status Currency  Gross   Fee    Net From Email Address          To Email Address     Transaction ID Item Title Item ID  Option 1 Name  Option 1 Value  Option 2 Name  Option 2 Value   Reference Txn ID  Custom Number  Quantity  Receipt ID Balance Subject
+0  01/02/2025  00:37:39      PST  Aizihaer Tuerxuntuoheti        Mobile Payment  Completed      USD -60.00 -2.04 -62.04   admin@rebnyc.com  azartursunnew@icloud.com  0LC65473PS4090422        NaN     NaN            NaN             NaN            NaN             NaN                NaN            NaN       NaN         NaN  -62.04     NaN
+1  01/02/2025  00:37:39      PST                      NaN  General Card Deposit  Completed      USD  62.04  0.00  62.04                NaN          admin@rebnyc.com  6MN21836VE404850K        NaN     NaN            NaN             NaN            NaN             NaN  0LC65473PS4090422            NaN       NaN         NaN    0.00     NaN
+2  01/02/2025  12:59:43      PST                      NaN  General Card Deposit     Denied      USD   9.24  0.00   9.24                NaN          admin@rebnyc.com  0GN00814PY140515U        NaN     NaN            NaN             NaN            NaN             NaN  7WU64559X4184482J            NaN       1.0         NaN    0.00     NaN
+
+============================================================
+TRANSACTION COMPARISON ANALYSIS
+============================================================
+
+Audit File Stats:
+  Total Transactions: 9150
+  Date Range: 2025-01-01 00:00:00 to 2025-12-31 00:00:00
+  Total Amount: $-57,517.80
+
+Personal File Stats:
+  Total Transactions: 4817
+  Date Range: 2025-01-01 00:00:00 to 2025-12-31 00:00:00
+  Total Amount: $-35,252.71
+
+Business File Stats:
+  Total Transactions: 4333
+  Date Range: 2025-01-02 00:00:00 to 2025-12-31 00:00:00
+  Total Amount: $-20,261.42
+
+============================================================
+AUDIT STATUS BREAKDOWN
+============================================================
+Analysis_Status
+Excluded                 6798
+Included (True Spend)    2352
+Name: count, dtype: int64
+
+Exclusion Reasons:
+Exclusion_Reason
+Money In / Refund                   2571
+Non-Finalized (Status: Pending)     2499
+Transfer / Noise                     874
+Non-Finalized (Status: Denied)       752
+Non-Finalized (Status: Reversed)      93
+Non-Finalized (Status: Canceled)       6
+Non-Finalized (Status: Removed)        3
+Name: count, dtype: int64
+
+============================================================
+CATEGORY BREAKDOWN
+============================================================
+Category
+Excluded               6798
+Other/Uncategorized    1176
+Tech & Subs             342
+Grocery/Daily           335
+Transportation          289
+Delivery                162
+Services/Laundry         44
+Entertainment             4
+Name: count, dtype: int64
+
+============================================================
+SOURCE BREAKDOWN
+============================================================
+Source
+Personal         4817
+Business/Main    4333
+Name: count, dtype: int64
+
+============================================================
+TRANSACTION MATCHING ANALYSIS
+============================================================
+Total Matched Transactions: 9148 (99.98%)
+  - Matched with Personal: 5017
+  - Matched with Business: 4131
+Unmatched in Audit: 2 (0.02%)
+Transactions in Personal not in Audit: 2
+Transactions in Business not in Audit: 0
+
+============================================================
+DATA SOURCE VERIFICATION
+============================================================
+
+Found 2 transactions in audit that don't match source files.
+
+Sources of unmatched transactions:
+Source
+Personal    2
+Name: count, dtype: int64
+
+============================================================
+DATA QUALITY ANALYSIS
+============================================================
+
+Missing Values:
+  Name: 1326 (14.49%)
+  Exclusion_Reason: 2352 (25.70%)
+
+Duplicate Rows: 1068
+Transactions with empty names: 1326
+
+============================================================
+FINAL SUMMARY
+============================================================
+
+✓ Audit file contains 9150 total transactions
+✓ Personal file contains 4817 total transactions
+✓ Business file contains 4333 total transactions
+✓ 9148 transactions matched between audit and source files
+✓ 2 transactions in audit not found in source files
+✓ 2 transactions in personal not found in audit file
+✓ 0 transactions in business not found in audit file
+
+============================================================
+CONCLUSIONS
+============================================================
+
+⚠ Partial match: 9148/9150 transactions verified
+  Match rate: 99.98%
+  2 transactions still unmatched
+  Recommendation: Investigate unmatched transactions
+
+⚠ Source files contain transactions not in audit:
+  Personal: 2 transactions
+
+✓ Analysis complete!
+
+📄 Report saved to: ANALYSIS_REPORT.txt
