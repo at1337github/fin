@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Financial Atlas Ultimate | Complete Intelligence Dashboard</title>
+
+  <!-- FONTS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- LIBRARIES -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+
+  <style>
+    :root {
+      --bg-app: #f5f6f8;
+      --bg-card: #ffffff;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --border-light: rgba(148,163,184,0.35);
+
+      /* Elegant Modern Palette */
+      --color-primary: #3b82f6;
+      --color-accent: #1e293b;
+      --color-highlight: #f59e0b;
+
+      --radius: 10px;
+      --shadow: 0 2px 8px rgba(0,0,0,0.06);
+      --shadow-md: 0 8px 20px rgba(15,23,42,0.12);
+      --shadow-lg: 0 18px 45px rgba(15,23,42,0.16);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+      background: radial-gradient(circle at top left, #f3f6ff, #fdfdfd);
+      color: var(--text-main);
+      padding: 18px;
+      line-height: 1.4;
+      font-size: 13px;
+    }
+
+    .app {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* HEADER */
+    .header-row {
+      background: radial-gradient(circle at top left, #020617, #020617 45%, #0f172a);
+      padding: 20px 22px 22px 22px;
+      border-radius: 14px;
+      color: #e5e7eb;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      border: none;
+    }
+
+    h1 { font-size: 24px; font-weight: 700; margin: 0 0 4px 0; letter-spacing: -0.5px; color: #e5e7eb; }
+    .subtitle { font-size: 13px; opacity: 0.85; margin: 0; font-weight: 400; color: #9ca3af; }
+
+    .upload-box {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: rgba(255,255,255,0.08);
+      padding: 8px 12px;
+      border-radius: 8px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .btn {
+      background: white;
+      color: #111827;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 12px;
+      letter-spacing: 0.2px;
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      background: #f9fafb;
+    }
+
+    .status-msg { font-size: 12px; font-weight: 600; color: #e5e7eb; opacity: 0.9; }
+
+    /* KPI CARDS */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+    .kpi-card {
+      background: linear-gradient(135deg, #f9fafb, #f3f4ff);
+      padding: 14px 16px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-light);
+      transition: all 0.2s;
+    }
+    .kpi-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-1px);
+    }
+    .kpi-label {
+      font-size: 11px;
+      text-transform: none;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0;
+      margin-bottom: 6px;
+    }
+    .kpi-val { font-size: 20px; font-weight: 700; margin: 4px 0; color: var(--text-main); }
+    .kpi-sub { font-size: 12px; color: var(--text-muted); margin-top: 6px; opacity: 1; line-height: 1.4; }
+
+    /* TOP CATEGORY TRENDS (from screenshot) */
+    .trend-section {
+      background: linear-gradient(135deg, #f9fafb, #f3f4ff);
+      border-radius: var(--radius);
+      padding: 14px 16px 16px 16px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-light);
+    }
+    .section-header {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--text-main);
+    }
+    .section-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; opacity: 1; line-height: 1.4; }
+
+    .trend-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 10px;
+    }
+
+    .trend-card {
+      background: white;
+      padding: 12px 14px 14px 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-light);
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
+    .trend-card:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+      border-color: var(--border);
+    }
+
+    .trend-card-header {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .trend-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .trend-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .trend-chart-container {
+      height: 60px;
+      margin: 10px 0;
+      position: relative;
+    }
+
+    .trend-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-light);
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* KEY INSIGHTS - HERO CALLOUT */
+    .insights-hero {
+      background: linear-gradient(135deg, #f9fafb, #f3f4ff);
+      border-radius: var(--radius);
+      padding: 14px 16px 16px 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+      border: 1px solid var(--border-light);
+    }
+    .insights-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .insight-stat {
+      background: white;
+      padding: 12px 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-light);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+      transition: all 0.2s;
+    }
+    .insight-stat:hover {
+      box-shadow: var(--shadow);
+      transform: translateY(-1px);
+    }
+    .insight-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: none;
+      letter-spacing: 0;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    .insight-value {
+      font-size: 20px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 4px;
+      color: var(--text-main);
+    }
+    .insight-change {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+    .insight-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    /* VISUAL COMPARISON CHART */
+    .comparison-visual {
+      background: linear-gradient(135deg, #f9fafb, #f3f4ff);
+      border-radius: var(--radius);
+      padding: 14px 16px 16px 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+      border: 1px solid var(--border-light);
+    }
+    .comparison-header {
+      margin-bottom: 12px;
+    }
+    .comparison-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+    .comparison-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      opacity: 1;
+      line-height: 1.4;
+    }
+    .chart-comparison {
+      height: 320px;
+      position: relative;
+    }
+
+    /* CATEGORY DRIVERS */
+    .driver-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+    .driver-card {
+      background: white;
+      padding: 12px 14px 14px 14px;
+      border-radius: var(--radius);
+      border-left: 3px solid;
+      transition: all 0.2s;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+      border: 1px solid var(--border-light);
+    }
+    .driver-card:hover {
+      box-shadow: var(--shadow);
+      transform: translateY(-1px);
+    }
+    .driver-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--text-main); }
+    .driver-amount { font-size: 18px; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin: 4px 0; }
+    .driver-percent { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+    .driver-details { font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.4; opacity: 1; }
+
+    /* CONTAINERS */
+    .card {
+      background: linear-gradient(135deg, #f9fafb, #f3f4ff);
+      border-radius: var(--radius);
+      padding: 14px 16px 16px 16px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-light);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 12px;
+    }
+    .card-title { font-size: 14px; font-weight: 700; color: var(--text-main); }
+    .card-desc { font-size: 12px; color: var(--text-muted); opacity: 1; line-height: 1.4; }
+
+    .sankey-container { width: 100%; height: 900px; overflow: visible; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .chart-box { height: 320px; position: relative; }
+
+    /* TABLES */
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th {
+      text-align: left;
+      padding: 8px 10px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      background: rgba(15,23,42,0.03);
+      position: sticky;
+      top: 0;
+      font-size: 11px;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    td { padding: 8px 10px; border-bottom: 1px solid var(--border-light); font-size: 12px; }
+    tr:last-child td { border-bottom: none; }
+    .amt { text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 500;
+      gap: 6px;
+    }
+
+    /* UTILS */
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .text-success { color: var(--color-success); }
+    .text-danger { color: var(--color-danger); }
+
+    @media (max-width: 1024px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .header-row { padding: 24px; }
+      h1 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <header class="header-row">
+    <div>
+      <h1>Financial Analytics Dashboard</h1>
+      <div class="subtitle">Decision-oriented spending analysis. Transaction patterns, category intelligence, and cash flow insights.</div>
+    </div>
+    <div class="upload-box">
+      <span id="statusMsg" class="status-msg">Ready</span>
+      <button class="btn" onclick="document.getElementById('fileInput').click()">Load CSV</button>
+      <input type="file" id="fileInput" accept=".csv" style="display:none">
+    </div>
+  </header>
+
+  <!-- SANKEY - TOP PRIORITY -->
+  <div class="card" style="padding: 20px 22px 24px 22px;">
+    <div class="card-header">
+      <div>
+        <div class="card-title">💰 Expenditure Flow Analysis</div>
+        <div class="card-desc">Category allocation patterns: Total Spend → Category Groups → Specific Categories</div>
+      </div>
+    </div>
+    <div id="sankeyChart" class="sankey-container"></div>
+  </div>
+
+  <!-- KEY INSIGHTS -->
+  <section class="insights-hero">
+    <div class="insights-title">
+      <span>📊</span>
+      <span>Category Concentration</span>
+    </div>
+    <div class="insights-desc" id="insightsDesc">
+      Primary expense distribution across key categories. QoQ comparison highlights allocation shifts.
+    </div>
+    <div class="insights-grid">
+      <div class="insight-stat">
+        <div class="insight-label">Transportation</div>
+        <div class="insight-value mono" id="transportPct">0%</div>
+        <div class="insight-change" id="transportChange">vs prior period</div>
+      </div>
+      <div class="insight-stat">
+        <div class="insight-label">Food & Delivery</div>
+        <div class="insight-value mono" id="deliveryPct">0%</div>
+        <div class="insight-change" id="deliveryChange">vs prior period</div>
+      </div>
+      <div class="insight-stat">
+        <div class="insight-label">Groceries</div>
+        <div class="insight-value mono" id="groceryPct">0%</div>
+        <div class="insight-change" id="groceryChange">vs prior period</div>
+      </div>
+      <div class="insight-stat">
+        <div class="insight-label">Combined</div>
+        <div class="insight-value mono" id="combinedPct">0%</div>
+        <div class="insight-change">of total expenditure</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- METRICS -->
+  <section class="kpi-grid">
+    <div class="kpi-card" style="border-color: var(--color-accent);">
+      <div class="kpi-label">Total Expenditure</div>
+      <div class="kpi-val mono" id="kpiSpend">$0</div>
+      <div class="kpi-sub">Excluding internal transfers</div>
+    </div>
+    <div class="kpi-card" style="border-color: var(--color-accent);">
+      <div class="kpi-label">Total Income</div>
+      <div class="kpi-val mono" id="kpiIncome">$0</div>
+      <div class="kpi-sub">Deposits & inflows</div>
+    </div>
+    <div class="kpi-card" style="border-color: var(--color-accent);">
+      <div class="kpi-label">Avg Monthly Spend</div>
+      <div class="kpi-val mono" id="kpiBurn">$0</div>
+      <div class="kpi-sub">6-month average</div>
+    </div>
+    <div class="kpi-card" style="border-color: var(--color-accent);">
+      <div class="kpi-label">Net Cash Flow</div>
+      <div class="kpi-val mono" id="kpiNet">$0</div>
+      <div class="kpi-sub">Income less expenditure</div>
+    </div>
+    <div class="kpi-card" style="border-color: var(--color-accent);">
+      <div class="kpi-label">Transactions</div>
+      <div class="kpi-val mono" id="kpiCount">0</div>
+      <div class="kpi-sub">Total analyzed</div>
+    </div>
+  </section>
+
+  <!-- COMPARISON CHART -->
+  <section class="comparison-visual">
+    <div class="comparison-header">
+      <div class="comparison-title">Quarter-over-Quarter Category Mix</div>
+      <div class="comparison-subtitle">Percentage allocation comparison: Recent quarter vs previous quarter. Hover bars to see changes.</div>
+    </div>
+    <div class="chart-comparison">
+      <canvas id="comparisonChart"></canvas>
+    </div>
+  </section>
+
+  <!-- STACKED AREA -->
+  <section class="comparison-visual">
+    <div class="comparison-header">
+      <div class="comparison-title">Monthly Category Trends</div>
+      <div class="comparison-subtitle">Stacked view of monthly category spending over 6-month period.</div>
+    </div>
+    <div class="chart-comparison">
+      <canvas id="stackedAreaChart"></canvas>
+    </div>
+  </section>
+
+  <!-- CATEGORY TRENDS - OVERLAID -->
+  <section class="comparison-visual">
+    <div class="comparison-header">
+      <div class="comparison-title">Category Spending Trends</div>
+      <div class="comparison-subtitle">Monthly spending patterns overlaid for top categories. Simple lines show trajectory and relative scale.</div>
+    </div>
+    <div class="chart-comparison" style="height: 380px;">
+      <canvas id="categoryTrendsOverlay"></canvas>
+    </div>
+  </section>
+
+  <!-- CATEGORY DRIVERS -->
+  <section class="trend-section">
+    <div class="section-header">Category Breakdown</div>
+    <div class="section-desc">Transaction volume, average spend per transaction, and top merchants by category.</div>
+    <div class="driver-grid" id="driverGrid"></div>
+  </section>
+
+  <!-- PARETO & TREND -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Merchant Concentration (Pareto Principle)</div>
+          <div class="card-desc"><strong>The 80/20 Rule:</strong> Pareto Principle states that ~80% of effects come from ~20% of causes. Here, the cumulative line (red) shows what percentage of total spend comes from the top N merchants. If the line crosses 80% around merchant 5-8, it means a small number of merchants drive most spending—useful for identifying key expense levers.</div>
+        </div>
+      </div>
+      <div class="chart-box"><canvas id="paretoChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Monthly Cash Flow Pattern</div>
+          <div class="card-desc">Income (green) vs outflows (red) by month. Net position visible at a glance.</div>
+        </div>
+      </div>
+      <div class="chart-box"><canvas id="trendChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- TABLES -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Top Merchants by Volume</div>
+          <div class="card-desc">Highest-spend merchants across all categories.</div>
+        </div>
+      </div>
+      <div style="height: 480px; overflow-y:auto;">
+        <table id="recurTable">
+          <thead><tr><th>Merchant</th><th>Category</th><th style="text-align:right">Total</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Recent Activity</div>
+          <div class="card-desc">Latest 100 transactions sorted by date.</div>
+        </div>
+      </div>
+      <div style="height: 480px; overflow-y:auto;">
+        <table id="txTable">
+          <thead><tr><th>Date</th><th>Merchant</th><th>Category</th><th style="text-align:right">Amount</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const App = {
+  data: [],
+  fmt: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }),
+  fmtDec: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }),
+  charts: {},
+
+  categoryRemap(rawGroup, rawSubCat, description) {
+    const g = (rawGroup || '').trim();
+    const s = (rawSubCat || '').trim();
+    const desc = (description || '').toLowerCase();
+
+    const excludedGroups = ['Cash Management', 'P2P Transfers', 'ATM/Cash'];
+    if (excludedGroups.includes(g)) return null;
+
+    const excludedSubCats = ['Cash App Balance', 'Debit Transfer', 'P2P Transfer', 'Chime', 'ATM Withdrawal', 'Money Transfer'];
+    if (excludedSubCats.includes(s)) return null;
+
+    if (g.startsWith('$') || s.startsWith('$')) return null;
+    if (desc.includes('cash app')) return null;
+
+    // GROCERIES
+    if (['Groceries', 'Dining Out', 'DoorDash'].includes(g)) {
+      if (['Deli/Market', 'Supermarket', 'Convenience Store'].includes(s)) {
+        return { group: 'Groceries', cat: 'Supermarket' };
+      }
+      if (['Restaurant', 'Fast Food'].includes(s)) {
+        return { group: 'Dining & Cafes', cat: 'Restaurants' };
+      }
+      if (s === 'Coffee') return { group: 'Dining & Cafes', cat: 'Coffee' };
+      if (g === 'DoorDash') return { group: 'Dining & Cafes', cat: 'Delivery' };
+      return { group: 'Dining & Cafes', cat: 'Dining Out' };
+    }
+
+    if (g === 'Food Delivery') return { group: 'Dining & Cafes', cat: 'Delivery' };
+
+    // TRANSPORTATION
+    if (['Transportation', 'Rideshare - Uber', 'Car Rental'].includes(g)) {
+      if (['Rideshare - Uber', 'Rideshare - Lyft', 'Rideshare - Taxi'].includes(s) || g === 'Rideshare - Uber') {
+        return { group: 'Transportation', cat: 'Rideshare' };
+      }
+      if (s === 'Transit - Subway/Bus' || s === 'Bike Share') {
+        return { group: 'Transportation', cat: 'Public Transit' };
+      }
+      if (['Gas Station', 'EV Charging'].includes(s)) {
+        if (desc.includes('us mobile')) return { group: 'Bills & Utilities', cat: 'Phone' };
+        return { group: 'Transportation', cat: 'Fuel' };
+      }
+      if (['Car Rental', 'Parking'].includes(s) || g === 'Car Rental') {
+        return { group: 'Transportation', cat: 'Parking' };
+      }
+      return { group: 'Transportation', cat: 'Rideshare' };
+    }
+
+    // SHOPPING
+    if (g === 'Shopping') {
+      if (s === 'Clothing') return { group: 'Retail & Shopping', cat: 'Clothing' };
+      if (s === 'Electronics') return { group: 'Retail & Shopping', cat: 'Electronics' };
+      return { group: 'Retail & Shopping', cat: 'General' };
+    }
+    if (g === 'Tobacco/Vape') return { group: 'Retail & Shopping', cat: 'Tobacco' };
+    if (g === 'Shipping') return { group: 'Services', cat: 'Shipping' };
+
+    // BILLS, SUBSCRIPTIONS, SOFTWARE
+    if (['Bills & Housing', 'Subscriptions', 'Software'].includes(g)) {
+      if (s === 'Phone/Internet' || s === 'Mobile Top-up') return { group: 'Bills & Utilities', cat: 'Phone' };
+      if (s === 'Insurance') return { group: 'Bills & Utilities', cat: 'Insurance' };
+      if (s === 'Rent' || s === 'Moving') return { group: 'Bills & Utilities', cat: 'Rent' };
+      if (['Apple Services', 'Software'].includes(s) || g === 'Software') {
+        return { group: 'Subscriptions', cat: 'Software' };
+      }
+      return { group: 'Subscriptions', cat: 'Media' };
+    }
+
+    // HEALTH
+    if (['Health', 'Personal Care'].includes(g)) {
+      if (s === 'Pharmacy') return { group: 'Health & Wellness', cat: 'Pharmacy' };
+      return { group: 'Health & Wellness', cat: 'Medical' };
+    }
+
+    // TRAVEL & ENTERTAINMENT
+    if (['Travel', 'Entertainment'].includes(g)) {
+      if (s === 'Hotels') return { group: 'Travel', cat: 'Lodging' };
+      return { group: 'Entertainment', cat: 'General' };
+    }
+
+    // SERVICES
+    if (g === 'Services') {
+      if (s === 'PayPal Fees') return { group: 'Financial Services', cat: 'Fees' };
+      if (s === 'Shipping') return { group: 'Services', cat: 'Shipping' };
+      if (s === 'Mobile Top-up') return { group: 'Bills & Utilities', cat: 'Phone' };
+      return { group: 'Services', cat: 'Professional' };
+    }
+
+    // COMPREHENSIVE PATTERN MATCHING FOR "OTHER" AND "UNKNOWN"
+    if (g === 'Other' || g === 'Unknown' || g === '') {
+      // Subscriptions & Streaming
+      if (desc.includes('apple') && (desc.includes('bill') || desc.includes('service'))) {
+        return { group: 'Subscriptions', cat: 'Software' };
+      }
+      if (desc.includes('spotify') || desc.includes('netflix') || desc.includes('hulu') ||
+          desc.includes('disney') || desc.includes('hbo') || desc.includes('prime video')) {
+        return { group: 'Subscriptions', cat: 'Media' };
+      }
+      if (desc.includes('openai') || desc.includes('chatgpt') || desc.includes('deepl') ||
+          desc.includes('browsertrix') || desc.includes('google') || desc.includes('microsoft')) {
+        return { group: 'Subscriptions', cat: 'Software' };
+      }
+
+      // Financial Services
+      if (desc.includes('paywithfour') || desc.includes('afterpay') || desc.includes('klarna') ||
+          desc.includes('affirm') || desc.includes('quadpay')) {
+        return { group: 'Financial Services', cat: 'BNPL' };
+      }
+      if (desc.includes('beenverified') || desc.includes('spokeo') || desc.includes('truthfinder')) {
+        return { group: 'Subscriptions', cat: 'Background Check' };
+      }
+
+      // Food & Dining
+      if (desc.includes('deli') || desc.includes('nostrand') || desc.includes('pizza') ||
+          desc.includes('halal') || desc.includes('restaurant') || desc.includes('cafe')) {
+        return { group: 'Dining & Cafes', cat: 'Dining Out' };
+      }
+      if (desc.includes('wonder') || desc.includes('doordash') || desc.includes('uber eats') ||
+          desc.includes('grubhub') || desc.includes('seamless')) {
+        return { group: 'Dining & Cafes', cat: 'Delivery' };
+      }
+      if (desc.includes('market') || desc.includes('grocery') || desc.includes('target')) {
+        return { group: 'Groceries', cat: 'Supermarket' };
+      }
+
+      // Transportation
+      if (desc.includes('omny') || desc.includes('mta') || desc.includes('subway') || desc.includes('transit')) {
+        return { group: 'Transportation', cat: 'Public Transit' };
+      }
+      if (desc.includes('uber') || desc.includes('lyft') || desc.includes('taxi')) {
+        return { group: 'Transportation', cat: 'Rideshare' };
+      }
+      if (desc.includes('citibike') || desc.includes('bike')) {
+        return { group: 'Transportation', cat: 'Bike Share' };
+      }
+
+      // Bills & Utilities
+      if (desc.includes('hercules') || desc.includes('laundry')) {
+        return { group: 'Bills & Utilities', cat: 'Laundry' };
+      }
+      if (desc.includes('us mobile') || desc.includes('phone') || desc.includes('mobile')) {
+        return { group: 'Bills & Utilities', cat: 'Phone' };
+      }
+
+      // Services
+      if (desc.includes('usps') || desc.includes('fedex') || desc.includes('ups') || desc.includes('shipping')) {
+        return { group: 'Services', cat: 'Shipping' };
+      }
+      if (desc.includes('paypal') && desc.includes('fee')) {
+        return { group: 'Financial Services', cat: 'Fees' };
+      }
+
+      // Health
+      if (desc.includes('walgreens') || desc.includes('cvs') || desc.includes('pharmacy')) {
+        return { group: 'Health & Wellness', cat: 'Pharmacy' };
+      }
+
+      // Shopping
+      if (desc.includes('marshalls') || desc.includes('tj maxx') || desc.includes('target') ||
+          desc.includes('amazon') || desc.includes('walmart')) {
+        return { group: 'Retail & Shopping', cat: 'General' };
+      }
+      if (desc.includes('best buy') || desc.includes('apple store') || desc.includes('electronics')) {
+        return { group: 'Retail & Shopping', cat: 'Electronics' };
+      }
+
+      // If truly unknown, default to most likely category based on amount patterns
+      return { group: 'Subscriptions', cat: 'Other Services' };
+    }
+
+    // Default fallback - should rarely hit this
+    return { group: 'Subscriptions', cat: 'Other Services' };
+  },
+
+  init() {
+    document.getElementById('fileInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => this.parseData(event.target.result);
+      reader.readAsText(file);
+    });
+  },
+
+  parseData(csvText) {
+    const status = document.getElementById('statusMsg');
+    status.innerText = "Processing...";
+
+    const lines = csvText.split(/\r\n|\n/);
+    let startIndex = 0;
+    for (let i = 0; i < Math.min(lines.length, 20); i++) {
+      if (lines[i].toLowerCase().includes('date') &&
+         (lines[i].toLowerCase().includes('amount') || lines[i].toLowerCase().includes('description'))) {
+        startIndex = i;
+        break;
+      }
+    }
+    const cleanCSV = lines.slice(startIndex).join('\n');
+
+    Papa.parse(cleanCSV, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (res) => {
+        if (res.data.length === 0) {
+          status.innerText = "Error: No data";
+          return;
+        }
+        this.processRows(res.data);
+        status.innerText = `Loaded ${this.data.length} transactions`;
+      }
+    });
+  },
+
+  processRows(rows) {
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    this.data = rows.map(row => {
+      let rawAmt = row['Amount'] || row['Net'] || '0';
+      let amt = parseFloat(rawAmt.toString().replace(/[^0-9.-]/g, ''));
+      if (isNaN(amt)) return null;
+
+      const isUserFormat = row['Group'] !== undefined;
+      if (isUserFormat && amt > 0) {
+        const group = (row['Group'] || '').toLowerCase();
+        const cat = (row['Category'] || '').toLowerCase();
+        const isIncome = group.includes('income') || cat.includes('income') || cat.includes('deposit');
+        if (!isIncome) amt = -amt;
+      }
+
+      let name = (row['Description'] || row['Name'] || 'Unknown').replace(/ nan$/i, '').trim();
+      let date = new Date(row['Date']);
+      if (isNaN(date.getTime())) date = new Date();
+
+      // Filter to last 6 months only
+      if (date < sixMonthsAgo) return null;
+
+      let rawGroup = row['Group'] || '';
+      let rawSubCat = row['Category'] || row['Type'] || '';
+
+      const remapped = this.categoryRemap(rawGroup, rawSubCat, name);
+      if (remapped === null) return null;
+
+      let group = remapped ? remapped.group : 'Subscriptions';
+      let category = remapped ? remapped.cat : 'Other Services';
+
+      let type = 'out';
+      if (amt > 0) type = 'in';
+
+      return {
+        date,
+        name,
+        amount: Math.abs(amt),
+        type,
+        group,
+        category
+      };
+    }).filter(d => d !== null);
+
+    this.data.sort((a, b) => b.date - a.date);
+    this.render();
+  },
+
+  render() {
+    const all = this.data;
+    const spend = all.filter(d => d.type === 'out');
+    const income = all.filter(d => d.type === 'in');
+
+    const totalSpend = spend.reduce((a, b) => a + b.amount, 0);
+    const totalIncome = income.reduce((a, b) => a + b.amount, 0);
+
+    document.getElementById('kpiSpend').innerText = this.fmt.format(totalSpend);
+    document.getElementById('kpiIncome').innerText = this.fmt.format(totalIncome);
+    document.getElementById('kpiCount').innerText = all.length;
+    document.getElementById('kpiNet').innerText = this.fmt.format(totalIncome - totalSpend);
+    document.getElementById('kpiNet').style.color = (totalIncome - totalSpend) >= 0 ? '#10b981' : '#ef4444';
+
+    const uniqueMonths = new Set(spend.map(d => d.date.getFullYear() + '-' + d.date.getMonth())).size || 1;
+    document.getElementById('kpiBurn').innerText = this.fmt.format(totalSpend / uniqueMonths);
+
+    this.renderKeyInsights(spend, totalSpend);
+    this.renderComparisonChart(spend);
+    this.renderStackedAreaChart(spend);
+    this.renderCategoryTrendsOverlay(spend);
+    this.renderCategoryDrivers(spend, totalSpend);
+    this.renderSankey(spend, totalSpend);
+    this.renderPareto(spend);
+    this.renderTrend(spend, income);
+    this.renderTables(spend, all);
+  },
+
+  renderKeyInsights(data, total) {
+    // Split data into recent 3 months vs previous 3 months for comparison
+    const sortedData = [...data].sort((a, b) => b.date - a.date);
+    const mostRecentDate = sortedData[0]?.date || new Date();
+
+    const threeMonthsAgo = new Date(mostRecentDate);
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+    const sixMonthsAgo = new Date(mostRecentDate);
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    // Recent 3 months
+    const recentData = data.filter(d => d.date >= threeMonthsAgo);
+    const recentTotal = recentData.reduce((a, b) => a + b.amount, 0);
+
+    // Previous 3 months
+    const previousData = data.filter(d => d.date >= sixMonthsAgo && d.date < threeMonthsAgo);
+    const previousTotal = previousData.reduce((a, b) => a + b.amount, 0);
+
+    // Calculate category totals for recent period
+    const transportRecent = recentData.filter(d => d.group === 'Transportation').reduce((a, b) => a + b.amount, 0);
+    const deliveryDiningRecent = recentData.filter(d => d.group === 'Dining & Cafes').reduce((a, b) => a + b.amount, 0);
+    const groceryRecent = recentData.filter(d => d.group === 'Groceries').reduce((a, b) => a + b.amount, 0);
+
+    // Calculate category totals for previous period
+    const transportPrev = previousData.filter(d => d.group === 'Transportation').reduce((a, b) => a + b.amount, 0);
+    const deliveryDiningPrev = previousData.filter(d => d.group === 'Dining & Cafes').reduce((a, b) => a + b.amount, 0);
+    const groceryPrev = previousData.filter(d => d.group === 'Groceries').reduce((a, b) => a + b.amount, 0);
+
+    // Percentages of total spend
+    const transportPct = ((transportRecent / recentTotal) * 100).toFixed(0);
+    const deliveryPct = ((deliveryDiningRecent / recentTotal) * 100).toFixed(0);
+    const groceryPct = ((groceryRecent / recentTotal) * 100).toFixed(0);
+    const combinedPct = (((transportRecent + deliveryDiningRecent + groceryRecent) / recentTotal) * 100).toFixed(0);
+
+    // Calculate changes
+    const transportChange = previousTotal > 0 ? (((transportRecent / recentTotal) - (transportPrev / previousTotal)) * 100).toFixed(0) : 0;
+    const deliveryChange = previousTotal > 0 ? (((deliveryDiningRecent / recentTotal) - (deliveryDiningPrev / previousTotal)) * 100).toFixed(0) : 0;
+    const groceryChange = previousTotal > 0 ? (((groceryRecent / recentTotal) - (groceryPrev / previousTotal)) * 100).toFixed(0) : 0;
+
+    // Update UI
+    document.getElementById('transportPct').innerText = transportPct + '%';
+    document.getElementById('deliveryPct').innerText = deliveryPct + '%';
+    document.getElementById('groceryPct').innerText = groceryPct + '%';
+    document.getElementById('combinedPct').innerText = combinedPct + '%';
+
+    const arrow = (val) => parseFloat(val) >= 0 ? '↑' : '↓';
+    const sign = (val) => parseFloat(val) >= 0 ? '+' : '';
+
+    document.getElementById('transportChange').innerHTML = `${arrow(transportChange)} ${sign(transportChange)}${transportChange}pp QoQ`;
+    document.getElementById('deliveryChange').innerHTML = `${arrow(deliveryChange)} ${sign(deliveryChange)}${deliveryChange}pp QoQ`;
+    document.getElementById('groceryChange').innerHTML = `${arrow(groceryChange)} ${sign(groceryChange)}${groceryChange}pp QoQ`;
+
+    // Generate dynamic insight description
+    const topCategories = [
+      { name: 'Transportation', pct: transportPct, amount: transportRecent },
+      { name: 'Delivery & Dining', pct: deliveryPct, amount: deliveryDiningRecent },
+      { name: 'Groceries', pct: groceryPct, amount: groceryRecent }
+    ].sort((a, b) => b.amount - a.amount);
+
+    const insightText = `In the recent quarter, <strong>${combinedPct}%</strong> of total expenditure (${this.fmt.format(transportRecent + deliveryDiningRecent + groceryRecent)}) concentrated in three primary categories: Transportation, Food Services, and Groceries. This represents a notable shift in allocation patterns compared to the previous quarter. ${topCategories[0].name} accounts for ${topCategories[0].pct}% of total spend, followed by ${topCategories[1].name} (${topCategories[1].pct}%) and ${topCategories[2].name} (${topCategories[2].pct}%).`;
+
+    document.getElementById('insightsDesc').innerHTML = insightText;
+  },
+
+  renderComparisonChart(data) {
+    const ctx = document.getElementById('comparisonChart');
+    if (this.charts.comparison) this.charts.comparison.destroy();
+
+    // Split data into recent 3 months vs previous 3 months
+    const sortedData = [...data].sort((a, b) => b.date - a.date);
+    const mostRecentDate = sortedData[0]?.date || new Date();
+
+    const threeMonthsAgo = new Date(mostRecentDate);
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+    const sixMonthsAgo = new Date(mostRecentDate);
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    // Recent 3 months
+    const recentData = data.filter(d => d.date >= threeMonthsAgo);
+    const previousData = data.filter(d => d.date >= sixMonthsAgo && d.date < threeMonthsAgo);
+
+    // Calculate category totals
+    const categories = ['Transportation', 'Dining & Cafes', 'Groceries', 'Subscriptions', 'Bills & Utilities', 'Retail & Shopping'];
+
+    const recentTotals = categories.map(cat =>
+      recentData.filter(d => d.group === cat).reduce((a, b) => a + b.amount, 0)
+    );
+
+    const previousTotals = categories.map(cat =>
+      previousData.filter(d => d.group === cat).reduce((a, b) => a + b.amount, 0)
+    );
+
+    // Calculate differences
+    const differences = categories.map((cat, i) => {
+      return recentTotals[i] - previousTotals[i];
+    });
+
+    const colorMap = {
+      'Transportation': '#3b82f6',
+      'Dining & Cafes': '#f59e0b',
+      'Groceries': '#10b981',
+      'Subscriptions': '#8b5cf6',
+      'Bills & Utilities': '#ef4444',
+      'Retail & Shopping': '#ec4899'
+    };
+
+    this.charts.comparison = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: categories,
+        datasets: [
+          {
+            label: 'Previous Quarter',
+            data: previousTotals,
+            backgroundColor: categories.map(cat => colorMap[cat] + '30'),
+            borderColor: categories.map(cat => colorMap[cat]),
+            borderWidth: 2,
+            borderRadius: 8,
+            barPercentage: 0.7
+          },
+          {
+            label: 'Recent Quarter',
+            data: recentTotals,
+            backgroundColor: categories.map(cat => colorMap[cat]),
+            borderColor: categories.map(cat => colorMap[cat]),
+            borderWidth: 2,
+            borderRadius: 8,
+            barPercentage: 0.7
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              font: { size: 12, weight: 600 },
+              padding: 12,
+              usePointStyle: true,
+              pointStyle: 'rectRounded'
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const label = context.dataset.label || '';
+                const value = context.parsed.y;
+                return `${label}: ${this.fmt.format(value)}`;
+              },
+              afterLabel: (context) => {
+                if (context.datasetIndex === 1) {
+                  const diff = differences[context.dataIndex];
+                  const pctChange = previousTotals[context.dataIndex] > 0
+                    ? ((diff / previousTotals[context.dataIndex]) * 100).toFixed(1)
+                    : 0;
+                  const arrow = diff >= 0 ? '↑' : '↓';
+                  const sign = diff >= 0 ? '+' : '';
+                  return `${arrow} ${sign}${this.fmt.format(diff)} (${sign}${pctChange}%)`;
+                }
+                return '';
+              }
+            },
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            padding: 12,
+            titleFont: { size: 13, weight: 'bold' },
+            bodyFont: { size: 12 },
+            bodySpacing: 8
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: {
+              font: { size: 11, weight: 600 }
+            }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(0, 0, 0, 0.05)' },
+            ticks: {
+              callback: (value) => '$' + (value / 1000).toFixed(0) + 'k',
+              font: { size: 11 }
+            }
+          }
+        }
+      }
+    });
+  },
+
+  renderStackedAreaChart(data) {
+    const ctx = document.getElementById('stackedAreaChart');
+    if (this.charts.stackedArea) this.charts.stackedArea.destroy();
+
+    // Group by month
+    const monthlyData = {};
+    data.forEach(d => {
+      const monthKey = d.date.toLocaleString('default', { month: 'short', year: '2-digit' });
+      if (!monthlyData[monthKey]) monthlyData[monthKey] = {};
+
+      const group = d.group;
+      if (!monthlyData[monthKey][group]) monthlyData[monthKey][group] = 0;
+      monthlyData[monthKey][group] += d.amount;
+    });
+
+    const sortedMonths = Object.keys(monthlyData).sort((a, b) => {
+      return new Date('01 ' + a.replace('-', ' ')) - new Date('01 ' + b.replace('-', ' '));
+    });
+
+    const categories = ['Transportation', 'Dining & Cafes', 'Groceries', 'Subscriptions', 'Bills & Utilities', 'Retail & Shopping'];
+
+    const datasets = categories.map(cat => {
+      const color = {
+        'Transportation': '#22d3ee',
+        'Dining & Cafes': '#fb923c',
+        'Groceries': '#10b981',
+        'Subscriptions': '#8b5cf6',
+        'Bills & Utilities': '#3b82f6',
+        'Retail & Shopping': '#e879f9'
+      }[cat];
+
+      return {
+        label: cat,
+        data: sortedMonths.map(month => monthlyData[month][cat] || 0),
+        backgroundColor: color + 'CC',
+        borderColor: color,
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        pointBackgroundColor: color,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2
+      };
+    });
+
+    this.charts.stackedArea = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: sortedMonths,
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              font: { size: 13, weight: 600 },
+              padding: 15,
+              usePointStyle: true,
+              pointStyle: 'circle'
+            }
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: 12,
+            titleFont: { size: 14, weight: 'bold' },
+            bodyFont: { size: 13 },
+            bodySpacing: 8,
+            callbacks: {
+              label: (context) => {
+                return `${context.dataset.label}: ${this.fmt.format(context.parsed.y)}`;
+              },
+              footer: (items) => {
+                const total = items.reduce((sum, item) => sum + item.parsed.y, 0);
+                return '\nTotal: ' + this.fmt.format(total);
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: {
+              font: { size: 12, weight: 600 },
+              maxRotation: 45,
+              minRotation: 45
+            }
+          },
+          y: {
+            stacked: true,
+            beginAtZero: true,
+            grid: { color: 'rgba(0, 0, 0, 0.05)' },
+            ticks: {
+              callback: (value) => '$' + (value / 1000).toFixed(0) + 'k',
+              font: { size: 12 }
+            },
+            title: {
+              display: true,
+              text: 'Monthly Spending',
+              font: { size: 13, weight: 600 }
+            }
+          }
+        }
+      }
+    });
+  },
+
+  renderCategoryTrendsOverlay(data) {
+    const categoryMonthly = {};
+
+    data.forEach(d => {
+      const key = d.group;
+      const monthKey = d.date.toLocaleString('default', { month: 'short', year: '2-digit' });
+
+      if (!categoryMonthly[key]) categoryMonthly[key] = {};
+      if (!categoryMonthly[key][monthKey]) categoryMonthly[key][monthKey] = 0;
+      categoryMonthly[key][monthKey] += d.amount;
+    });
+
+    const topCategories = Object.entries(categoryMonthly)
+      .map(([cat, months]) => ({
+        category: cat,
+        total: Object.values(months).reduce((a, b) => a + b, 0),
+        months: months
+      }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 6);
+
+    const allMonths = new Set();
+    topCategories.forEach(item => {
+      Object.keys(item.months).forEach(m => allMonths.add(m));
+    });
+
+    const sortedMonths = Array.from(allMonths).sort((a, b) => {
+      return new Date('01 ' + a.replace('-', ' ')) - new Date('01 ' + b.replace('-', ' '));
+    });
+
+    const colorMap = {
+      'Transportation': '#3b82f6',
+      'Dining & Cafes': '#f59e0b',
+      'Groceries': '#10b981',
+      'Subscriptions': '#8b5cf6',
+      'Bills & Utilities': '#ef4444',
+      'Retail & Shopping': '#ec4899',
+      'Financial Services': '#14b8a6',
+      'Health & Wellness': '#06b6d4',
+      'Entertainment': '#f97316',
+      'Travel': '#6366f1',
+      'Services': '#84cc16'
+    };
+
+    const datasets = topCategories.map(item => {
+      const color = colorMap[item.category] || '#64748b';
+      return {
+        label: item.category,
+        data: sortedMonths.map(m => item.months[m] || 0),
+        borderColor: color,
+        backgroundColor: 'transparent',
+        borderWidth: 3,
+        tension: 0.35,
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        pointBackgroundColor: color,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2
+      };
+    });
+
+    const ctx = document.getElementById('categoryTrendsOverlay');
+    if (this.charts.categoryTrendsOverlay) this.charts.categoryTrendsOverlay.destroy();
+
+    this.charts.categoryTrendsOverlay = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: sortedMonths,
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'bottom',
+            labels: {
+              font: { size: 12, weight: 600 },
+              padding: 15,
+              usePointStyle: true,
+              pointStyle: 'line'
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: 12,
+            titleFont: { size: 13, weight: 'bold' },
+            bodyFont: { size: 12 },
+            bodySpacing: 6,
+            callbacks: {
+              label: (context) => {
+                return `${context.dataset.label}: ${this.fmt.format(context.parsed.y)}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: {
+              font: { size: 11, weight: 600 },
+              maxRotation: 0,
+              minRotation: 0
+            }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(0, 0, 0, 0.05)' },
+            ticks: {
+              callback: (value) => '$' + (value / 1000).toFixed(0) + 'k',
+              font: { size: 11 }
+            }
+          }
+        }
+      }
+    });
+  },
+
+  renderCategoryDrivers(data, total) {
+    const groupStats = {};
+    data.forEach(d => {
+      if (!groupStats[d.group]) {
+        groupStats[d.group] = { total: 0, count: 0, merchants: new Set() };
+      }
+      groupStats[d.group].total += d.amount;
+      groupStats[d.group].count += 1;
+      groupStats[d.group].merchants.add(d.name);
+    });
+
+    const sorted = Object.entries(groupStats)
+      .map(([group, stats]) => ({
+        group,
+        total: stats.total,
+        percent: (stats.total / total * 100).toFixed(1),
+        count: stats.count,
+        avgPerTx: stats.total / stats.count,
+        merchants: Array.from(stats.merchants).slice(0, 2)
+      }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 6);
+
+    const colors = {
+      'Transportation': { border: '#4A5568', bg: '#EDF2F7' },
+      'Dining & Cafes': { border: '#718096', bg: '#E2E8F0' },
+      'Groceries': { border: '#2D3748', bg: '#F7FAFC' },
+      'Subscriptions': { border: '#A0AEC0', bg: '#F7FAFC' },
+      'Bills & Utilities': { border: '#ED8936', bg: '#FEEBC8' },
+      'Retail & Shopping': { border: '#CBD5E0', bg: '#F7FAFC' },
+      'Financial Services': { border: '#E2E8F0', bg: '#F7FAFC' },
+      'Health & Wellness': { border: '#718096', bg: '#EDF2F7' },
+      'Entertainment': { border: '#A0AEC0', bg: '#F7FAFC' },
+      'Travel': { border: '#4A5568', bg: '#EDF2F7' },
+      'Services': { border: '#CBD5E0', bg: '#F7FAFC' }
+    };
+
+    document.getElementById('driverGrid').innerHTML = sorted.map(item => {
+      const color = colors[item.group] || { border: '#94a3b8', bg: '#f1f5f9' };
+      const topMerchants = item.merchants.join(', ');
+
+      return `
+        <div class="driver-card" style="border-color: ${color.border}; background: ${color.bg};">
+          <div class="driver-title">${item.group}</div>
+          <div class="driver-amount">${this.fmt.format(item.total)}</div>
+          <div class="driver-percent">${item.percent}% of total · ${item.count} transactions</div>
+          <div class="driver-details">
+            Avg ${this.fmtDec.format(item.avgPerTx)}/tx · Top: ${topMerchants}
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  renderSankey(data, total) {
+    const container = document.getElementById('sankeyChart');
+    container.innerHTML = '';
+    const width = container.clientWidth;
+    const height = 900;
+
+    const groups = {};
+    const cats = {};
+
+    data.forEach(d => {
+      groups[d.group] = (groups[d.group] || 0) + d.amount;
+      cats[`${d.group}|${d.category}`] = (cats[`${d.group}|${d.category}`] || 0) + d.amount;
+    });
+
+    const colorMap = {
+      'Transportation': '#3b82f6',
+      'Dining & Cafes': '#f59e0b',
+      'Groceries': '#10b981',
+      'Subscriptions': '#8b5cf6',
+      'Bills & Utilities': '#ef4444',
+      'Retail & Shopping': '#ec4899',
+      'Financial Services': '#14b8a6',
+      'Health & Wellness': '#06b6d4',
+      'Entertainment': '#f97316',
+      'Travel': '#6366f1',
+      'Services': '#84cc16'
+    };
+
+    const categoryIcons = {
+      'Transportation': '🚗',
+      'Dining & Cafes': '🍽️',
+      'Groceries': '🛒',
+      'Subscriptions': '📱',
+      'Bills & Utilities': '💡',
+      'Retail & Shopping': '🛍️',
+      'Financial Services': '💳',
+      'Health & Wellness': '🏥',
+      'Entertainment': '🎬',
+      'Travel': '✈️',
+      'Services': '🔧'
+    };
+
+    // Build nodes and links without "Total Outflow" root
+    const nodes = [];
+    const nodeMap = {};
+    const links = [];
+
+    const getNode = (name, color) => {
+      if (nodeMap[name] === undefined) {
+        nodeMap[name] = nodes.length;
+        nodes.push({ name, color });
+      }
+      return nodeMap[name];
+    };
+
+    // Create group and category nodes
+    Object.entries(groups).sort((a, b) => b[1] - a[1]).forEach(([grp, val]) => {
+      if (val < total * 0.01) return;
+      const color = colorMap[grp] || '#64748b';
+      const gIdx = getNode(grp, color);
+
+      Object.entries(cats).filter(([k]) => k.startsWith(grp + '|')).forEach(([k, cVal]) => {
+        if (cVal < total * 0.005) return;
+        const cName = k.split('|')[1];
+        const cIdx = getNode(cName, color);
+        links.push({ source: gIdx, target: cIdx, value: cVal });
+      });
+    });
+
+    const svg = d3.select(container).append("svg").attr("width", width).attr("height", height);
+    const sankey = d3.sankey()
+      .nodeWidth(40)
+      .nodePadding(30)
+      .nodeAlign(d3.sankeyLeft)
+      .extent([[40, 40], [width - 250, height - 40]]);
+
+    const graph = sankey({
+      nodes: nodes.map(d => ({ ...d })),
+      links: links.map(d => ({ ...d }))
+    });
+
+    // Draw links with smooth curves
+    const link = svg.append("g").attr("fill", "none").attr("stroke-opacity", 0.4)
+      .selectAll("path").data(graph.links).join("path")
+      .attr("d", d3.sankeyLinkHorizontal())
+      .attr("stroke", d => d.source.color)
+      .attr("stroke-width", d => Math.max(2, d.width))
+      .style("transition", "all 0.3s")
+      .on("mouseover", function () { d3.select(this).attr("stroke-opacity", 0.7); })
+      .on("mouseout", function () { d3.select(this).attr("stroke-opacity", 0.4); });
+
+    link.append("title").text(d => `${d.source.name} → ${d.target.name}\n${this.fmt.format(d.value)}`);
+
+    // Draw nodes with straight edges (no rounded corners on left column)
+    const node = svg.append("g").selectAll("rect").data(graph.nodes).join("rect")
+      .attr("x", d => d.x0)
+      .attr("y", d => d.y0)
+      .attr("height", d => d.y1 - d.y0)
+      .attr("width", d => d.x1 - d.x0)
+      .attr("fill", d => d.color)
+      .attr("rx", d => d.depth === 0 ? 0 : 4)
+      .style("cursor", "pointer")
+      .on("mouseover", (e, d) => {
+        link.attr("stroke-opacity", l => (l.source.name === d.name || l.target.name === d.name) ? 0.7 : 0.1);
+      })
+      .on("mouseout", () => {
+        link.attr("stroke-opacity", 0.4);
+      });
+
+    node.append("title").text(d => `${d.name}\n${this.fmt.format(d.value)}`);
+
+    // Add labels with amounts
+    svg.append("g").attr("font-family", "'Inter', sans-serif").attr("font-size", 12).attr("font-weight", 600)
+      .selectAll("text").data(graph.nodes).join("text")
+      .attr("x", d => d.x0 < width / 2 ? d.x1 + 10 : d.x0 - 10)
+      .attr("y", d => (d.y1 + d.y0) / 2)
+      .attr("dy", "0.35em")
+      .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
+      .each(function(d) {
+        const icon = categoryIcons[d.name.trim()] || '';
+        const displayName = d.name.trim();
+        const pct = ((d.value / total) * 100).toFixed(1);
+
+        const text = d3.select(this);
+        text.append("tspan")
+          .attr("x", d.x0 < width / 2 ? d.x1 + 10 : d.x0 - 10)
+          .attr("font-weight", 700)
+          .text(icon ? `${icon} ${displayName}` : displayName);
+
+        text.append("tspan")
+          .attr("x", d.x0 < width / 2 ? d.x1 + 10 : d.x0 - 10)
+          .attr("dy", "1.2em")
+          .attr("font-size", 11)
+          .attr("font-weight", 500)
+          .attr("fill", "#6b7280")
+          .text(`${this.fmt.format(d.value)} (${pct}%)`);
+      }.bind(this))
+      .style("pointer-events", "none")
+      .style("fill", "#1A202C");
+  },
+
+  renderPareto(data) {
+    const ctx = document.getElementById('paretoChart');
+    if (this.charts.pareto) this.charts.pareto.destroy();
+
+    const merchants = {};
+    let total = 0;
+    data.forEach(d => {
+      merchants[d.name] = (merchants[d.name] || 0) + d.amount;
+      total += d.amount;
+    });
+
+    const sorted = Object.entries(merchants).sort((a, b) => b[1] - a[1]);
+    const top20 = sorted.slice(0, 20);
+
+    let cum = 0;
+    const labels = [];
+    const values = [];
+    const percentages = [];
+
+    top20.forEach(([name, val]) => {
+      cum += val;
+      labels.push(name);
+      values.push(val);
+      percentages.push((cum / total) * 100);
+    });
+
+    this.charts.pareto = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Cumulative %',
+            data: percentages,
+            type: 'line',
+            borderColor: '#ef4444',
+            borderWidth: 2,
+            yAxisID: 'y1',
+            pointRadius: 2
+          },
+          {
+            label: 'Spent Amount',
+            data: values,
+            backgroundColor: '#3b82f6',
+            yAxisID: 'y',
+            borderRadius: 4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        scales: {
+          y: { type: 'linear', position: 'left', beginAtZero: true },
+          y1: { type: 'linear', position: 'right', min: 0, max: 100, grid: { drawOnChartArea: false } }
+        }
+      }
+    });
+  },
+
+  renderTrend(spend, income) {
+    const ctx = document.getElementById('trendChart');
+    if (this.charts.trend) this.charts.trend.destroy();
+
+    const group = (arr) => {
+      const m = {};
+      arr.forEach(d => {
+        const k = d.date.toLocaleString('default', { month: 'short', year: '2-digit' });
+        m[k] = (m[k] || 0) + d.amount;
+      });
+      return m;
+    };
+
+    const sM = group(spend);
+    const iM = group(income);
+    const keys = Array.from(new Set([...Object.keys(sM), ...Object.keys(iM)]))
+      .sort((a, b) => new Date('01 ' + a.replace('-', ' ')) - new Date('01 ' + b.replace('-', ' ')));
+
+    this.charts.trend = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: keys,
+        datasets: [
+          { label: 'Outflow', data: keys.map(k => sM[k] || 0), backgroundColor: '#ef4444', borderRadius: 4 },
+          { label: 'Income', data: keys.map(k => iM[k] || 0), backgroundColor: '#10b981', borderRadius: 4 }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  },
+
+  renderTables(spend, all) {
+    const merch = {};
+    spend.forEach(d => {
+      if (!merch[d.name]) merch[d.name] = { val: 0, cat: d.category };
+      merch[d.name].val += d.amount;
+    });
+    const sorted = Object.entries(merch).sort((a, b) => b[1].val - a[1].val).slice(0, 50);
+
+    document.querySelector('#recurTable tbody').innerHTML = sorted.map(([name, data]) => `
+      <tr>
+        <td><div style="font-weight:600">${name}</div></td>
+        <td><span class="pill" style="background:#f1f5f9; color:#64748b">${data.cat}</span></td>
+        <td class="amt">${this.fmt.format(data.val)}</td>
+      </tr>
+    `).join('');
+
+    document.querySelector('#txTable tbody').innerHTML = all
+      .slice(0, 100).map(d => `
+      <tr>
+        <td style="color:#64748b">${d.date.toLocaleDateString()}</td>
+        <td style="font-weight:500">${d.name}</td>
+        <td><span class="pill" style="background:#3b82f620; color:#3b82f6">${d.group}</span></td>
+        <td class="amt" style="color:${d.type === 'in' ? '#10b981' : '#ef4444'}">
+          ${d.type === 'in' ? '+' : ''}${this.fmt.format(d.amount)}
+        </td>
+      </tr>
+    `).join('');
+  }
+};
+
+window.onload = () => App.init();
+</script>
+</body>
+</html>
