@@ -10745,12 +10745,22 @@ const App = {
         },
         scales: {
           x: {
+            title: {
+              display: true,
+              text: 'Spending Category',
+              font: { size: 12, weight: 600 }
+            },
             grid: { display: false },
             ticks: {
               font: { size: 11, weight: 600 }
             }
           },
           y: {
+            title: {
+              display: true,
+              text: 'Amount ($)',
+              font: { size: 12, weight: 600 }
+            },
             beginAtZero: true,
             grid: { color: 'rgba(0, 0, 0, 0.05)' },
             ticks: {
@@ -10782,7 +10792,20 @@ const App = {
       return new Date('01 ' + a.replace('-', ' ')) - new Date('01 ' + b.replace('-', ' '));
     });
 
-    const categories = ['Transportation', 'Dining & Cafes', 'Groceries', 'Subscriptions', 'Bills & Utilities', 'Retail & Shopping'];
+    // Calculate totals for each category
+    const categoryTotals = {};
+    data.forEach(d => {
+      if (!categoryTotals[d.group]) categoryTotals[d.group] = 0;
+      categoryTotals[d.group] += d.amount;
+    });
+
+    // Sort categories by total (descending - biggest first = bottom of stack)
+    const sortedCategories = Object.entries(categoryTotals)
+      .sort((a, b) => b[1] - a[1])
+      .map(([cat]) => cat)
+      .filter(cat => ['Transportation', 'Dining & Cafes', 'Groceries', 'Subscriptions', 'Bills & Utilities', 'Retail & Shopping'].includes(cat));
+
+    const categories = sortedCategories;
 
     const datasets = categories.map(cat => {
       const color = {
@@ -10855,6 +10878,11 @@ const App = {
         },
         scales: {
           x: {
+            title: {
+              display: true,
+              text: 'Month',
+              font: { size: 12, weight: 600 }
+            },
             grid: { display: false },
             ticks: {
               font: { size: 12, weight: 600 },
@@ -10984,6 +11012,11 @@ const App = {
         },
         scales: {
           x: {
+            title: {
+              display: true,
+              text: 'Month',
+              font: { size: 12, weight: 600 }
+            },
             grid: { display: false },
             ticks: {
               font: { size: 11, weight: 600 },
@@ -10992,6 +11025,11 @@ const App = {
             }
           },
           y: {
+            title: {
+              display: true,
+              text: 'Monthly Spending ($)',
+              font: { size: 12, weight: 600 }
+            },
             beginAtZero: true,
             grid: { color: 'rgba(0, 0, 0, 0.05)' },
             ticks: {
@@ -11253,8 +11291,35 @@ const App = {
         maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false },
         scales: {
-          y: { type: 'linear', position: 'left', beginAtZero: true },
-          y1: { type: 'linear', position: 'right', min: 0, max: 100, grid: { drawOnChartArea: false } }
+          x: {
+            title: {
+              display: true,
+              text: 'Merchant',
+              font: { size: 12, weight: 600 }
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Amount ($)',
+              font: { size: 12, weight: 600 }
+            },
+            type: 'linear',
+            position: 'left',
+            beginAtZero: true
+          },
+          y1: {
+            title: {
+              display: true,
+              text: 'Cumulative %',
+              font: { size: 12, weight: 600 }
+            },
+            type: 'linear',
+            position: 'right',
+            min: 0,
+            max: 100,
+            grid: { drawOnChartArea: false }
+          }
         }
       }
     });
@@ -11287,7 +11352,27 @@ const App = {
           { label: 'Income', data: keys.map(k => iM[k] || 0), backgroundColor: '#10b981', borderRadius: 4 }
         ]
       },
-      options: { responsive: true, maintainAspectRatio: false }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Month',
+              font: { size: 12, weight: 600 }
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Amount ($)',
+              font: { size: 12, weight: 600 }
+            },
+            beginAtZero: true
+          }
+        }
+      }
     });
   },
 
