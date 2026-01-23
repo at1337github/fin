@@ -2806,9 +2806,8 @@ const App = {
       return;
     }
 
-    // Check if d3.sankey is available
     if (typeof d3.sankey !== 'function') {
-      console.error("d3.sankey is not available. Library may not be loaded.");
+      console.error("d3.sankey is not available");
       container.innerHTML = '<p style="padding:20px;color:#ef4444;">Sankey diagram unavailable (library loading issue)</p>';
       return;
     }
@@ -2822,139 +2821,169 @@ const App = {
       return;
     }
 
+    // Aggregate data by group and category
     const groups = {};
     const cats = {};
 
     data.forEach(d => {
       groups[d.group] = (groups[d.group] || 0) + d.amount;
-      cats[`${d.group}|${d.category}`] = (cats[`${d.group}|${d.category}`] || 0) + d.amount;
+      const key = `${d.group}|||${d.category}`;
+      cats[key] = (cats[key] || 0) + d.amount;
     });
 
+    // Color scheme matching the example
     const colorMap = {
-      'Transportation': '#3b82f6',
-      'Dining & Cafes': '#f59e0b',
       'Groceries': '#10b981',
+      'Dining & Cafes': '#f59e0b',
+      'Dining Out': '#f59e0b',
+      'Transportation': '#3b82f6',
+      'Rideshare - Uber': '#3b82f6',
+      'Car Rental': '#3b82f6',
       'Subscriptions': '#8b5cf6',
       'Bills & Utilities': '#ef4444',
-      'Retail & Shopping': '#ec4899',
-      'Financial Services': '#14b8a6',
-      'Health & Wellness': '#06b6d4',
-      'Entertainment': '#f97316',
+      'Shopping': '#ec4899',
+      'Services': '#84cc16',
       'Travel': '#6366f1',
-      'Services': '#84cc16'
+      'Health': '#06b6d4',
+      'Entertainment': '#f97316',
+      'Other': '#64748b'
     };
 
-    const categoryIcons = {
-      'Transportation': '🚗',
-      'Dining & Cafes': '🍽️',
-      'Groceries': '🛒',
-      'Subscriptions': '📱',
-      'Bills & Utilities': '💡',
-      'Retail & Shopping': '🛍️',
-      'Financial Services': '💳',
-      'Health & Wellness': '🏥',
-      'Entertainment': '🎬',
-      'Travel': '✈️',
-      'Services': '🔧'
-    };
-
-    // Build nodes and links without "Total Outflow" root
+    // Build 3-level flow: Spending → Groups → Categories
     const nodes = [];
     const nodeMap = {};
     const links = [];
 
-    const getNode = (name, color) => {
+    const getNode = (name, color, depth) => {
       if (nodeMap[name] === undefined) {
         nodeMap[name] = nodes.length;
-        nodes.push({ name, color });
+        nodes.push({ name, color, depth });
       }
       return nodeMap[name];
     };
 
-    // Create group and category nodes
-    Object.entries(groups).sort((a, b) => b[1] - a[1]).forEach(([grp, val]) => {
-      if (val < total * 0.01) return;
-      const color = colorMap[grp] || '#64748b';
-      const gIdx = getNode(grp, color);
+    // Level 0: Total Spending (left side)
+    const spendingIdx = getNode('Spending', '#1e293b', 0);
 
-      Object.entries(cats).filter(([k]) => k.startsWith(grp + '|')).forEach(([k, cVal]) => {
-        if (cVal < total * 0.005) return;
-        const cName = k.split('|')[1];
-        const cIdx = getNode(cName, color);
-        links.push({ source: gIdx, target: cIdx, value: cVal });
+    // Level 1: Category Groups (middle)
+    const sortedGroups = Object.entries(groups)
+      .sort((a, b) => b[1] - a[1])
+      .filter(([_, val]) => val >= total * 0.02); // Only show groups >= 2%
+
+    sortedGroups.forEach(([group, groupVal]) => {
+      const color = colorMap[group] || '#64748b';
+      const groupIdx = getNode(group, color, 1);
+
+      // Link from Spending to Group
+      links.push({ source: spendingIdx, target: groupIdx, value: groupVal });
+
+      // Level 2: Specific Categories (right side)
+      const groupCats = Object.entries(cats)
+        .filter(([key, _]) => key.startsWith(group + '|||'))
+        .sort((a, b) => b[1] - a[1])
+        .filter(([_, val]) => val >= total * 0.005); // Only show categories >= 0.5%
+
+      groupCats.forEach(([key, catVal]) => {
+        const catName = key.split('|||')[1];
+        const catIdx = getNode(catName, color, 2);
+
+        // Link from Group to Category
+        links.push({ source: groupIdx, target: catIdx, value: catVal });
       });
     });
 
-    const svg = d3.select(container).append("svg").attr("width", width).attr("height", height);
+    // Create SVG
+    const svg = d3.select(container).append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+    // Configure sankey layout
     const sankey = d3.sankey()
-      .nodeWidth(40)
-      .nodePadding(30)
+      .nodeWidth(15)
+      .nodePadding(12)
       .nodeAlign(d3.sankeyLeft)
-      .extent([[40, 40], [width - 250, height - 40]]);
+      .extent([[50, 10], [width - 200, height - 10]]);
 
     const graph = sankey({
       nodes: nodes.map(d => ({ ...d })),
       links: links.map(d => ({ ...d }))
     });
 
-    // Draw links with smooth curves
-    const link = svg.append("g").attr("fill", "none").attr("stroke-opacity", 0.4)
-      .selectAll("path").data(graph.links).join("path")
+    // Draw links (flows)
+    const link = svg.append("g")
+      .attr("fill", "none")
+      .selectAll("path")
+      .data(graph.links)
+      .join("path")
       .attr("d", d3.sankeyLinkHorizontal())
       .attr("stroke", d => d.source.color)
-      .attr("stroke-width", d => Math.max(2, d.width))
-      .style("transition", "all 0.3s")
-      .on("mouseover", function () { d3.select(this).attr("stroke-opacity", 0.7); })
-      .on("mouseout", function () { d3.select(this).attr("stroke-opacity", 0.4); });
-
-    link.append("title").text(d => `${d.source.name} → ${d.target.name}\n${this.fmt.format(d.value)}`);
-
-    // Draw nodes with straight edges (no rounded corners on left column)
-    const node = svg.append("g").selectAll("rect").data(graph.nodes).join("rect")
-      .attr("x", d => d.x0)
-      .attr("y", d => d.y0)
-      .attr("height", d => d.y1 - d.y0)
-      .attr("width", d => d.x1 - d.x0)
-      .attr("fill", d => d.color)
-      .attr("rx", d => d.depth === 0 ? 0 : 4)
-      .style("cursor", "pointer")
-      .on("mouseover", (e, d) => {
-        link.attr("stroke-opacity", l => (l.source.name === d.name || l.target.name === d.name) ? 0.7 : 0.1);
+      .attr("stroke-width", d => Math.max(1, d.width))
+      .attr("stroke-opacity", 0.3)
+      .on("mouseover", function() {
+        d3.select(this).attr("stroke-opacity", 0.6);
       })
-      .on("mouseout", () => {
-        link.attr("stroke-opacity", 0.4);
+      .on("mouseout", function() {
+        d3.select(this).attr("stroke-opacity", 0.3);
       });
 
-    node.append("title").text(d => `${d.name}\n${this.fmt.format(d.value)}`);
+    link.append("title")
+      .text(d => `${d.source.name} → ${d.target.name}\n${this.fmt.format(d.value)} (${((d.value/total)*100).toFixed(2)}%)`);
 
-    // Add labels with amounts
-    svg.append("g").attr("font-family", "'Inter', sans-serif").attr("font-size", 12).attr("font-weight", 600)
-      .selectAll("text").data(graph.nodes).join("text")
-      .attr("x", d => d.x0 < width / 2 ? d.x1 + 10 : d.x0 - 10)
+    // Draw nodes (rectangles)
+    const node = svg.append("g")
+      .selectAll("rect")
+      .data(graph.nodes)
+      .join("rect")
+      .attr("x", d => d.x0)
+      .attr("y", d => d.y0)
+      .attr("height", d => Math.max(1, d.y1 - d.y0))
+      .attr("width", d => d.x1 - d.x0)
+      .attr("fill", d => d.color)
+      .attr("opacity", 0.9)
+      .style("cursor", "pointer")
+      .on("mouseover", (e, d) => {
+        link.attr("stroke-opacity", l =>
+          (l.source === d || l.target === d) ? 0.6 : 0.1
+        );
+      })
+      .on("mouseout", () => {
+        link.attr("stroke-opacity", 0.3);
+      });
+
+    node.append("title")
+      .text(d => `${d.name}\n${this.fmt.format(d.value)} (${((d.value/total)*100).toFixed(2)}%)`);
+
+    // Add labels
+    svg.append("g")
+      .attr("font-family", "'Inter', -apple-system, sans-serif")
+      .attr("font-size", 11)
+      .selectAll("text")
+      .data(graph.nodes)
+      .join("text")
+      .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
       .attr("y", d => (d.y1 + d.y0) / 2)
       .attr("dy", "0.35em")
       .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
+      .attr("fill", "#1e293b")
       .each(function(d) {
-        const icon = categoryIcons[d.name.trim()] || '';
-        const displayName = d.name.trim();
-        const pct = ((d.value / total) * 100).toFixed(1);
-
         const text = d3.select(this);
-        text.append("tspan")
-          .attr("x", d.x0 < width / 2 ? d.x1 + 10 : d.x0 - 10)
-          .attr("font-weight", 700)
-          .text(icon ? `${icon} ${displayName}` : displayName);
+        const pct = ((d.value / total) * 100).toFixed(d.depth === 0 ? 0 : 2);
 
+        // Category name
         text.append("tspan")
-          .attr("x", d.x0 < width / 2 ? d.x1 + 10 : d.x0 - 10)
-          .attr("dy", "1.2em")
-          .attr("font-size", 11)
+          .attr("x", d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
+          .attr("font-weight", d.depth === 0 ? 700 : 600)
+          .text(d.name);
+
+        // Amount and percentage
+        text.append("tspan")
+          .attr("x", d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
+          .attr("dy", "1.1em")
+          .attr("font-size", 10)
+          .attr("fill", "#64748b")
           .attr("font-weight", 500)
-          .attr("fill", "#6b7280")
           .text(`${this.fmt.format(d.value)} (${pct}%)`);
-      }.bind(this))
-      .style("pointer-events", "none")
-      .style("fill", "#1A202C");
+      }.bind(this));
   },
 
   renderPareto(data) {
