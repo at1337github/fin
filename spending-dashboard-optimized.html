@@ -744,6 +744,24 @@ const App = {
   init() {
     console.log("Dashboard initializing...");
 
+    // Check required libraries
+    if (typeof Papa === 'undefined') {
+      console.error("PapaParse library not loaded!");
+      document.getElementById('statusMsg').innerText = "Error: PapaParse library missing";
+      return;
+    }
+    if (typeof Chart === 'undefined') {
+      console.error("Chart.js library not loaded!");
+      document.getElementById('statusMsg').innerText = "Error: Chart.js library missing";
+      return;
+    }
+    if (typeof d3 === 'undefined') {
+      console.error("D3.js library not loaded!");
+      document.getElementById('statusMsg').innerText = "Error: D3.js library missing";
+      return;
+    }
+    console.log("✓ All libraries loaded successfully");
+
     // Embedded CSV data (compact format)
     const csvData = `Date,Description,Amount,Group,Category
 12/31/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
@@ -2263,15 +2281,29 @@ const App = {
     const uniqueMonths = new Set(spend.map(d => d.date.getFullYear() + '-' + d.date.getMonth())).size || 1;
     document.getElementById('kpiBurn').innerText = this.fmt.format(totalSpend / uniqueMonths);
 
-    this.renderKeyInsights(spend, totalSpend);
-    this.renderComparisonChart(spend);
-    this.renderStackedAreaChart(spend);
-    this.renderCategoryTrendsOverlay(spend);
-    this.renderCategoryDrivers(spend, totalSpend);
-    this.renderSankey(spend, totalSpend);
-    this.renderPareto(spend);
-    this.renderTrend(spend, income);
-    this.renderTables(spend, all);
+    // Render each chart with error handling
+    const charts = [
+      { name: 'Key Insights', fn: () => this.renderKeyInsights(spend, totalSpend) },
+      { name: 'Comparison Chart', fn: () => this.renderComparisonChart(spend) },
+      { name: 'Stacked Area Chart', fn: () => this.renderStackedAreaChart(spend) },
+      { name: 'Category Trends', fn: () => this.renderCategoryTrendsOverlay(spend) },
+      { name: 'Category Drivers', fn: () => this.renderCategoryDrivers(spend, totalSpend) },
+      { name: 'Sankey Diagram', fn: () => this.renderSankey(spend, totalSpend) },
+      { name: 'Pareto Chart', fn: () => this.renderPareto(spend) },
+      { name: 'Trend Chart', fn: () => this.renderTrend(spend, income) },
+      { name: 'Tables', fn: () => this.renderTables(spend, all) }
+    ];
+
+    charts.forEach(chart => {
+      try {
+        console.log(`Rendering ${chart.name}...`);
+        chart.fn();
+        console.log(`✓ ${chart.name} rendered successfully`);
+      } catch (error) {
+        console.error(`✗ Failed to render ${chart.name}:`, error);
+        // Continue rendering other charts
+      }
+    });
   },
 
   renderKeyInsights(data, total) {
@@ -2769,9 +2801,26 @@ const App = {
 
   renderSankey(data, total) {
     const container = document.getElementById('sankeyChart');
+    if (!container) {
+      console.error("Sankey container element not found");
+      return;
+    }
+
+    // Check if d3.sankey is available
+    if (typeof d3.sankey !== 'function') {
+      console.error("d3.sankey is not available. Library may not be loaded.");
+      container.innerHTML = '<p style="padding:20px;color:#ef4444;">Sankey diagram unavailable (library loading issue)</p>';
+      return;
+    }
+
     container.innerHTML = '';
     const width = container.clientWidth;
     const height = 900;
+
+    if (width === 0) {
+      console.error("Container has no width");
+      return;
+    }
 
     const groups = {};
     const cats = {};
