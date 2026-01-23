@@ -1,0 +1,3036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Financial Atlas Ultimate | Complete Intelligence Dashboard</title>
+
+  <!-- FONTS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- LIBRARIES -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+
+  <style>
+    :root {
+      --bg-app: #f5f6f8;
+      --bg-card: #ffffff;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --border-light: rgba(148,163,184,0.35);
+
+      /* Elegant Modern Palette */
+      --color-primary: #3b82f6;
+      --color-accent: #1e293b;
+      --color-highlight: #f59e0b;
+
+      --radius: 10px;
+      --shadow: 0 2px 8px rgba(0,0,0,0.06);
+      --shadow-md: 0 8px 20px rgba(15,23,42,0.12);
+      --shadow-lg: 0 18px 45px rgba(15,23,42,0.16);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+      background: radial-gradient(circle at top left, #f3f6ff, #fdfdfd);
+      color: var(--text-main);
+      padding: 18px;
+      line-height: 1.4;
+      font-size: 13px;
+    }
+
+    .app {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* HEADER */
+    .header-row {
+      background: radial-gradient(circle at top left, #020617, #020617 45%, #0f172a);
+      padding: 20px 22px 22px 22px;
+      border-radius: 14px;
+      color: #e5e7eb;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      border: none;
+    }
+
+    h1 { font-size: 24px; font-weight: 700; margin: 0 0 4px 0; letter-spacing: -0.5px; color: #e5e7eb; }
+    .subtitle { font-size: 13px; opacity: 0.85; margin: 0; font-weight: 400; color: #9ca3af; }
+
+    .upload-box {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: rgba(255,255,255,0.08);
+      padding: 8px 12px;
+      border-radius: 8px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .btn {
+      background: white;
+      color: #111827;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 12px;
+      letter-spacing: 0.2px;
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      background: #f9fafb;
+    }
+
+    .status-msg { font-size: 12px; font-weight: 600; color: #e5e7eb; opacity: 0.9; }
+
+    /* KPI CARDS */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+    .kpi-card {
+      background: linear-gradient(135deg, #f9fafb, #f3f4ff);
+      padding: 14px 16px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-light);
+      transition: all 0.2s;
+    }
+    .kpi-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-1px);
+    }
+    .kpi-label {
+      font-size: 11px;
+      text-transform: none;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0;
+      margin-bottom: 6px;
+    }
+    .kpi-val { font-size: 20px; font-weight: 700; margin: 4px 0; color: var(--text-main); }
+    .kpi-sub { font-size: 12px; color: var(--text-muted); margin-top: 6px; opacity: 1; line-height: 1.4; }
+
+    /* TOP CATEGORY TRENDS (from screenshot) */
+    .trend-section {
+      background: linear-gradient(135deg, #f9fafb, #f3f4ff);
+      border-radius: var(--radius);
+      padding: 14px 16px 16px 16px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-light);
+    }
+    .section-header {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--text-main);
+    }
+    .section-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; opacity: 1; line-height: 1.4; }
+
+    .trend-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 10px;
+    }
+
+    .trend-card {
+      background: white;
+      padding: 12px 14px 14px 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-light);
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
+    .trend-card:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+      border-color: var(--border);
+    }
+
+    .trend-card-header {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .trend-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .trend-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .trend-chart-container {
+      height: 60px;
+      margin: 10px 0;
+      position: relative;
+    }
+
+    .trend-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-light);
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* KEY INSIGHTS - HERO CALLOUT */
+    .insights-hero {
+      background: linear-gradient(135deg, #f9fafb, #f3f4ff);
+      border-radius: var(--radius);
+      padding: 14px 16px 16px 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+      border: 1px solid var(--border-light);
+    }
+    .insights-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .insight-stat {
+      background: white;
+      padding: 12px 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-light);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+      transition: all 0.2s;
+    }
+    .insight-stat:hover {
+      box-shadow: var(--shadow);
+      transform: translateY(-1px);
+    }
+    .insight-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: none;
+      letter-spacing: 0;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    .insight-value {
+      font-size: 20px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 4px;
+      color: var(--text-main);
+    }
+    .insight-change {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+    .insight-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    /* VISUAL COMPARISON CHART */
+    .comparison-visual {
+      background: linear-gradient(135deg, #f9fafb, #f3f4ff);
+      border-radius: var(--radius);
+      padding: 14px 16px 16px 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+      border: 1px solid var(--border-light);
+    }
+    .comparison-header {
+      margin-bottom: 12px;
+    }
+    .comparison-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+    .comparison-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      opacity: 1;
+      line-height: 1.4;
+    }
+    .chart-comparison {
+      height: 320px;
+      position: relative;
+    }
+
+    /* CATEGORY DRIVERS */
+    .driver-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+    .driver-card {
+      background: white;
+      padding: 12px 14px 14px 14px;
+      border-radius: var(--radius);
+      border-left: 3px solid;
+      transition: all 0.2s;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+      border: 1px solid var(--border-light);
+    }
+    .driver-card:hover {
+      box-shadow: var(--shadow);
+      transform: translateY(-1px);
+    }
+    .driver-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--text-main); }
+    .driver-amount { font-size: 18px; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin: 4px 0; }
+    .driver-percent { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+    .driver-details { font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.4; opacity: 1; }
+
+    /* CONTAINERS */
+    .card {
+      background: linear-gradient(135deg, #f9fafb, #f3f4ff);
+      border-radius: var(--radius);
+      padding: 14px 16px 16px 16px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-light);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 12px;
+    }
+    .card-title { font-size: 14px; font-weight: 700; color: var(--text-main); }
+    .card-desc { font-size: 12px; color: var(--text-muted); opacity: 1; line-height: 1.4; }
+
+    .sankey-container { width: 100%; height: 900px; overflow: visible; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .chart-box { height: 320px; position: relative; }
+
+    /* TABLES */
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th {
+      text-align: left;
+      padding: 8px 10px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      background: rgba(15,23,42,0.03);
+      position: sticky;
+      top: 0;
+      font-size: 11px;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    td { padding: 8px 10px; border-bottom: 1px solid var(--border-light); font-size: 12px; }
+    tr:last-child td { border-bottom: none; }
+    .amt { text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 500;
+      gap: 6px;
+    }
+
+    /* UTILS */
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .text-success { color: var(--color-success); }
+    .text-danger { color: var(--color-danger); }
+
+    @media (max-width: 1024px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .header-row { padding: 24px; }
+      h1 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <header class="header-row">
+    <div>
+      <h1>Financial Analytics Dashboard</h1>
+      <div class="subtitle">Decision-oriented spending analysis. Transaction patterns, category intelligence, and cash flow insights.</div>
+    </div>
+    <div class="upload-box">
+      <span id="statusMsg" class="status-msg">Loading data...</span>
+    </div>
+  </header>
+
+  <!-- SANKEY - TOP PRIORITY -->
+  <div class="card" style="padding: 20px 22px 24px 22px;">
+    <div class="card-header">
+      <div>
+        <div class="card-title">💰 Expenditure Flow Analysis</div>
+        <div class="card-desc">Category allocation patterns: Total Spend → Category Groups → Specific Categories</div>
+      </div>
+    </div>
+    <div id="sankeyChart" class="sankey-container"></div>
+  </div>
+
+  <!-- KEY INSIGHTS -->
+  <section class="insights-hero">
+    <div class="insights-title">
+      <span>📊</span>
+      <span>Category Concentration</span>
+    </div>
+    <div class="insights-desc" id="insightsDesc">
+      Primary expense distribution across key categories. QoQ comparison highlights allocation shifts.
+    </div>
+    <div class="insights-grid">
+      <div class="insight-stat">
+        <div class="insight-label">Transportation</div>
+        <div class="insight-value mono" id="transportPct">0%</div>
+        <div class="insight-change" id="transportChange">vs prior period</div>
+      </div>
+      <div class="insight-stat">
+        <div class="insight-label">Food & Delivery</div>
+        <div class="insight-value mono" id="deliveryPct">0%</div>
+        <div class="insight-change" id="deliveryChange">vs prior period</div>
+      </div>
+      <div class="insight-stat">
+        <div class="insight-label">Groceries</div>
+        <div class="insight-value mono" id="groceryPct">0%</div>
+        <div class="insight-change" id="groceryChange">vs prior period</div>
+      </div>
+      <div class="insight-stat">
+        <div class="insight-label">Combined</div>
+        <div class="insight-value mono" id="combinedPct">0%</div>
+        <div class="insight-change">of total expenditure</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- METRICS -->
+  <section class="kpi-grid">
+    <div class="kpi-card" style="border-color: var(--color-accent);">
+      <div class="kpi-label">Total Expenditure</div>
+      <div class="kpi-val mono" id="kpiSpend">$0</div>
+      <div class="kpi-sub">Excluding internal transfers</div>
+    </div>
+    <div class="kpi-card" style="border-color: var(--color-accent);">
+      <div class="kpi-label">Total Income</div>
+      <div class="kpi-val mono" id="kpiIncome">$0</div>
+      <div class="kpi-sub">Deposits & inflows</div>
+    </div>
+    <div class="kpi-card" style="border-color: var(--color-accent);">
+      <div class="kpi-label">Avg Monthly Spend</div>
+      <div class="kpi-val mono" id="kpiBurn">$0</div>
+      <div class="kpi-sub">6-month average</div>
+    </div>
+    <div class="kpi-card" style="border-color: var(--color-accent);">
+      <div class="kpi-label">Net Cash Flow</div>
+      <div class="kpi-val mono" id="kpiNet">$0</div>
+      <div class="kpi-sub">Income less expenditure</div>
+    </div>
+    <div class="kpi-card" style="border-color: var(--color-accent);">
+      <div class="kpi-label">Transactions</div>
+      <div class="kpi-val mono" id="kpiCount">0</div>
+      <div class="kpi-sub">Total analyzed</div>
+    </div>
+  </section>
+
+  <!-- COMPARISON CHART -->
+  <section class="comparison-visual">
+    <div class="comparison-header">
+      <div class="comparison-title">Quarter-over-Quarter Category Mix</div>
+      <div class="comparison-subtitle">Percentage allocation comparison: Recent quarter vs previous quarter. Hover bars to see changes.</div>
+    </div>
+    <div class="chart-comparison">
+      <canvas id="comparisonChart"></canvas>
+    </div>
+  </section>
+
+  <!-- STACKED AREA -->
+  <section class="comparison-visual">
+    <div class="comparison-header">
+      <div class="comparison-title">Monthly Category Trends</div>
+      <div class="comparison-subtitle">Stacked view of monthly category spending over 6-month period.</div>
+    </div>
+    <div class="chart-comparison">
+      <canvas id="stackedAreaChart"></canvas>
+    </div>
+  </section>
+
+  <!-- CATEGORY TRENDS - OVERLAID -->
+  <section class="comparison-visual">
+    <div class="comparison-header">
+      <div class="comparison-title">Category Spending Trends</div>
+      <div class="comparison-subtitle">Monthly spending patterns overlaid for top categories. Simple lines show trajectory and relative scale.</div>
+    </div>
+    <div class="chart-comparison" style="height: 380px;">
+      <canvas id="categoryTrendsOverlay"></canvas>
+    </div>
+  </section>
+
+  <!-- CATEGORY DRIVERS -->
+  <section class="trend-section">
+    <div class="section-header">Category Breakdown</div>
+    <div class="section-desc">Transaction volume, average spend per transaction, and top merchants by category.</div>
+    <div class="driver-grid" id="driverGrid"></div>
+  </section>
+
+  <!-- PARETO & TREND -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Merchant Concentration (Pareto Principle)</div>
+          <div class="card-desc"><strong>The 80/20 Rule:</strong> Pareto Principle states that ~80% of effects come from ~20% of causes. Here, the cumulative line (red) shows what percentage of total spend comes from the top N merchants. If the line crosses 80% around merchant 5-8, it means a small number of merchants drive most spending—useful for identifying key expense levers.</div>
+        </div>
+      </div>
+      <div class="chart-box"><canvas id="paretoChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Monthly Cash Flow Pattern</div>
+          <div class="card-desc">Income (green) vs outflows (red) by month. Net position visible at a glance.</div>
+        </div>
+      </div>
+      <div class="chart-box"><canvas id="trendChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- TABLES -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Top Merchants by Volume</div>
+          <div class="card-desc">Highest-spend merchants across all categories.</div>
+        </div>
+      </div>
+      <div style="height: 480px; overflow-y:auto;">
+        <table id="recurTable">
+          <thead><tr><th>Merchant</th><th>Category</th><th style="text-align:right">Total</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Recent Activity</div>
+          <div class="card-desc">Latest 100 transactions sorted by date.</div>
+        </div>
+      </div>
+      <div style="height: 480px; overflow-y:auto;">
+        <table id="txTable">
+          <thead><tr><th>Date</th><th>Merchant</th><th>Category</th><th style="text-align:right">Amount</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const App = {
+  data: [],
+  fmt: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }),
+  fmtDec: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }),
+  charts: {},
+
+  categoryRemap(rawGroup, rawSubCat, description) {
+    const g = (rawGroup || '').trim();
+    const s = (rawSubCat || '').trim();
+    const desc = (description || '').toLowerCase();
+
+    const excludedGroups = ['Cash Management', 'P2P Transfers', 'ATM/Cash'];
+    if (excludedGroups.includes(g)) return null;
+
+    const excludedSubCats = ['Cash App Balance', 'Debit Transfer', 'P2P Transfer', 'Chime', 'ATM Withdrawal', 'Money Transfer'];
+    if (excludedSubCats.includes(s)) return null;
+
+    if (g.startsWith('$') || s.startsWith('$')) return null;
+    if (desc.includes('cash app')) return null;
+
+    // GROCERIES
+    if (['Groceries', 'Dining Out', 'DoorDash'].includes(g)) {
+      if (['Deli/Market', 'Supermarket', 'Convenience Store'].includes(s)) {
+        return { group: 'Groceries', cat: 'Supermarket' };
+      }
+      if (['Restaurant', 'Fast Food'].includes(s)) {
+        return { group: 'Dining & Cafes', cat: 'Restaurants' };
+      }
+      if (s === 'Coffee') return { group: 'Dining & Cafes', cat: 'Coffee' };
+      if (g === 'DoorDash') return { group: 'Dining & Cafes', cat: 'Delivery' };
+      return { group: 'Dining & Cafes', cat: 'Dining Out' };
+    }
+
+    if (g === 'Food Delivery') return { group: 'Dining & Cafes', cat: 'Delivery' };
+
+    // TRANSPORTATION
+    if (['Transportation', 'Rideshare - Uber', 'Car Rental'].includes(g)) {
+      if (['Rideshare - Uber', 'Rideshare - Lyft', 'Rideshare - Taxi'].includes(s) || g === 'Rideshare - Uber') {
+        return { group: 'Transportation', cat: 'Rideshare' };
+      }
+      if (s === 'Transit - Subway/Bus' || s === 'Bike Share') {
+        return { group: 'Transportation', cat: 'Public Transit' };
+      }
+      if (['Gas Station', 'EV Charging'].includes(s)) {
+        if (desc.includes('us mobile')) return { group: 'Bills & Utilities', cat: 'Phone' };
+        return { group: 'Transportation', cat: 'Fuel' };
+      }
+      if (['Car Rental', 'Parking'].includes(s) || g === 'Car Rental') {
+        return { group: 'Transportation', cat: 'Parking' };
+      }
+      return { group: 'Transportation', cat: 'Rideshare' };
+    }
+
+    // SHOPPING
+    if (g === 'Shopping') {
+      if (s === 'Clothing') return { group: 'Retail & Shopping', cat: 'Clothing' };
+      if (s === 'Electronics') return { group: 'Retail & Shopping', cat: 'Electronics' };
+      return { group: 'Retail & Shopping', cat: 'General' };
+    }
+    if (g === 'Tobacco/Vape') return { group: 'Retail & Shopping', cat: 'Tobacco' };
+    if (g === 'Shipping') return { group: 'Services', cat: 'Shipping' };
+
+    // BILLS, SUBSCRIPTIONS, SOFTWARE
+    if (['Bills & Housing', 'Subscriptions', 'Software'].includes(g)) {
+      if (s === 'Phone/Internet' || s === 'Mobile Top-up') return { group: 'Bills & Utilities', cat: 'Phone' };
+      if (s === 'Insurance') return { group: 'Bills & Utilities', cat: 'Insurance' };
+      if (s === 'Rent' || s === 'Moving') return { group: 'Bills & Utilities', cat: 'Rent' };
+      if (['Apple Services', 'Software'].includes(s) || g === 'Software') {
+        return { group: 'Subscriptions', cat: 'Software' };
+      }
+      return { group: 'Subscriptions', cat: 'Media' };
+    }
+
+    // HEALTH
+    if (['Health', 'Personal Care'].includes(g)) {
+      if (s === 'Pharmacy') return { group: 'Health & Wellness', cat: 'Pharmacy' };
+      return { group: 'Health & Wellness', cat: 'Medical' };
+    }
+
+    // TRAVEL & ENTERTAINMENT
+    if (['Travel', 'Entertainment'].includes(g)) {
+      if (s === 'Hotels') return { group: 'Travel', cat: 'Lodging' };
+      return { group: 'Entertainment', cat: 'General' };
+    }
+
+    // SERVICES
+    if (g === 'Services') {
+      if (s === 'PayPal Fees') return { group: 'Financial Services', cat: 'Fees' };
+      if (s === 'Shipping') return { group: 'Services', cat: 'Shipping' };
+      if (s === 'Mobile Top-up') return { group: 'Bills & Utilities', cat: 'Phone' };
+      return { group: 'Services', cat: 'Professional' };
+    }
+
+    // COMPREHENSIVE PATTERN MATCHING FOR "OTHER" AND "UNKNOWN"
+    if (g === 'Other' || g === 'Unknown' || g === '') {
+      // Subscriptions & Streaming
+      if (desc.includes('apple') && (desc.includes('bill') || desc.includes('service'))) {
+        return { group: 'Subscriptions', cat: 'Software' };
+      }
+      if (desc.includes('spotify') || desc.includes('netflix') || desc.includes('hulu') ||
+          desc.includes('disney') || desc.includes('hbo') || desc.includes('prime video')) {
+        return { group: 'Subscriptions', cat: 'Media' };
+      }
+      if (desc.includes('openai') || desc.includes('chatgpt') || desc.includes('deepl') ||
+          desc.includes('browsertrix') || desc.includes('google') || desc.includes('microsoft')) {
+        return { group: 'Subscriptions', cat: 'Software' };
+      }
+
+      // Financial Services
+      if (desc.includes('paywithfour') || desc.includes('afterpay') || desc.includes('klarna') ||
+          desc.includes('affirm') || desc.includes('quadpay')) {
+        return { group: 'Financial Services', cat: 'BNPL' };
+      }
+      if (desc.includes('beenverified') || desc.includes('spokeo') || desc.includes('truthfinder')) {
+        return { group: 'Subscriptions', cat: 'Background Check' };
+      }
+
+      // Food & Dining
+      if (desc.includes('deli') || desc.includes('nostrand') || desc.includes('pizza') ||
+          desc.includes('halal') || desc.includes('restaurant') || desc.includes('cafe')) {
+        return { group: 'Dining & Cafes', cat: 'Dining Out' };
+      }
+      if (desc.includes('wonder') || desc.includes('doordash') || desc.includes('uber eats') ||
+          desc.includes('grubhub') || desc.includes('seamless')) {
+        return { group: 'Dining & Cafes', cat: 'Delivery' };
+      }
+      if (desc.includes('market') || desc.includes('grocery') || desc.includes('target')) {
+        return { group: 'Groceries', cat: 'Supermarket' };
+      }
+
+      // Transportation
+      if (desc.includes('omny') || desc.includes('mta') || desc.includes('subway') || desc.includes('transit')) {
+        return { group: 'Transportation', cat: 'Public Transit' };
+      }
+      if (desc.includes('uber') || desc.includes('lyft') || desc.includes('taxi')) {
+        return { group: 'Transportation', cat: 'Rideshare' };
+      }
+      if (desc.includes('citibike') || desc.includes('bike')) {
+        return { group: 'Transportation', cat: 'Bike Share' };
+      }
+
+      // Bills & Utilities
+      if (desc.includes('hercules') || desc.includes('laundry')) {
+        return { group: 'Bills & Utilities', cat: 'Laundry' };
+      }
+      if (desc.includes('us mobile') || desc.includes('phone') || desc.includes('mobile')) {
+        return { group: 'Bills & Utilities', cat: 'Phone' };
+      }
+
+      // Services
+      if (desc.includes('usps') || desc.includes('fedex') || desc.includes('ups') || desc.includes('shipping')) {
+        return { group: 'Services', cat: 'Shipping' };
+      }
+      if (desc.includes('paypal') && desc.includes('fee')) {
+        return { group: 'Financial Services', cat: 'Fees' };
+      }
+
+      // Health
+      if (desc.includes('walgreens') || desc.includes('cvs') || desc.includes('pharmacy')) {
+        return { group: 'Health & Wellness', cat: 'Pharmacy' };
+      }
+
+      // Shopping
+      if (desc.includes('marshalls') || desc.includes('tj maxx') || desc.includes('target') ||
+          desc.includes('amazon') || desc.includes('walmart')) {
+        return { group: 'Retail & Shopping', cat: 'General' };
+      }
+      if (desc.includes('best buy') || desc.includes('apple store') || desc.includes('electronics')) {
+        return { group: 'Retail & Shopping', cat: 'Electronics' };
+      }
+
+      // If truly unknown, default to most likely category based on amount patterns
+      return { group: 'Subscriptions', cat: 'Other Services' };
+    }
+
+    // Default fallback - should rarely hit this
+    return { group: 'Subscriptions', cat: 'Other Services' };
+  },
+
+  init() {
+    console.log("Dashboard initializing...");
+
+    // Embedded CSV data (compact format)
+    const csvData = `Date,Description,Amount,Group,Category
+12/31/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+12/31/2025,1037 NOSTRAND DELI LLC,-6.76,Groceries,Deli/Market
+12/31/2025,1037 NOSTRAND DELI LLC,-6.76,Groceries,Deli/Market
+12/31/2025,Apple Services,-10.99,Subscriptions,Apple Services
+12/31/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+12/30/2025,"Uber Technologies, Inc",-24.93,Rideshare - Uber,Rideshare - Uber
+12/30/2025,"Uber Technologies, Inc",-23.73,Rideshare - Uber,Rideshare - Uber
+12/30/2025,PayPal Inc.,-8.86,Services,PayPal Fees
+12/30/2025,WONDER,-8.49,Dining Out,Restaurant
+12/29/2025,APPLE.COM/BILL,-12.99,Subscriptions,Apple Services
+12/29/2025,1037 NOSTRAND DELI LLC,-7.8,Groceries,Deli/Market
+12/29/2025,1037 NOSTRAND DELI LLC,-7.8,Groceries,Deli/Market
+12/29/2025,APPLE.COM/BILL,-12.99,Subscriptions,Apple Services
+12/29/2025,WONDER,-20.58,Dining Out,Restaurant
+12/29/2025,APPLE.COM/BILL,-2.17,Subscriptions,Apple Services
+12/29/2025,APPLE.COM/BILL,-2.17,Subscriptions,Apple Services
+12/29/2025,WONDER,-3.9,Dining Out,Restaurant
+12/28/2025,T & T Organic Market I,-20.8,Groceries,Supermarket
+12/28/2025,T & T Organic Market I,-20.8,Groceries,Supermarket
+12/28/2025,WONDER,-28.2,Dining Out,Restaurant
+12/28/2025,WONDER,-44.48,Dining Out,Restaurant
+12/28/2025,WONDER,-19.88,Dining Out,Restaurant
+12/28/2025,WONDER,-28.2,Dining Out,Restaurant
+12/27/2025,APPLE.COM/BILL,-16.31,Subscriptions,Apple Services
+12/27/2025,PayPal Inc.,-166.96,Services,PayPal Fees
+12/27/2025,PayPal Inc.,0.0,Services,PayPal Fees
+12/26/2025,1037 NOSTRAND DELI LLC,-2.08,Groceries,Deli/Market
+12/26/2025,CURB MOBILITY,-28.44,Rideshare - Uber,Rideshare - Uber
+12/26/2025,1037 NOSTRAND DELI LLC,-2.6,Groceries,Deli/Market
+12/26/2025,WONDER,-9.37,Dining Out,Restaurant
+12/26/2025,HERCULES CORP KIOSK,-10.0,Bills & Housing,Laundry
+12/26/2025,Apple Services,-9.99,Subscriptions,Apple Services
+12/26/2025,HERCULES CORP KIOSK,-10.0,Bills & Housing,Laundry
+12/26/2025,CURB MOBILITY,-28.44,Rideshare - Uber,Rideshare - Uber
+12/26/2025,1037 NOSTRAND DELI LLC,-2.6,Groceries,Deli/Market
+12/26/2025,1037 NOSTRAND DELI LLC,-2.08,Groceries,Deli/Market
+12/26/2025,PayPal Inc.,0.0,Services,PayPal Fees
+12/25/2025,Uber Eats,-17.3,Food Delivery,Delivery
+12/24/2025,WONDER,-27.11,Dining Out,Restaurant
+12/24/2025,"Uber Technologies, Inc",-26.44,Rideshare - Uber,Rideshare - Uber
+12/24/2025,WONDER,-2.12,Dining Out,Restaurant
+12/23/2025,TARGET.COM,-61.73,Groceries,Supermarket
+12/23/2025,SPK*SPOKEO SEARCH,-29.95,Subscriptions,Software
+12/23/2025,SPK*SPOKEO SEARCH,-29.95,Subscriptions,Software
+12/23/2025,T & T Organic Market I,-18.72,Groceries,Supermarket
+12/23/2025,T & T Organic Market I,-18.72,Groceries,Supermarket
+12/23/2025,WONDER,-12.9,Dining Out,Restaurant
+12/23/2025,WONDER,-12.9,Dining Out,Restaurant
+12/22/2025,1037 NOSTRAND DELI LLC,-18.72,Groceries,Deli/Market
+12/22/2025,1037 NOSTRAND DELI LLC,-18.72,Groceries,Deli/Market
+12/22/2025,Uber Eats,-16.61,Food Delivery,Delivery
+12/22/2025,TARGET.COM,-11.97,Groceries,Supermarket
+12/22/2025,PayPal Inc.,0.0,Services,PayPal Fees
+12/21/2025,PayPal Inc.,-8.22,Services,PayPal Fees
+12/21/2025,WONDER,-38.43,Dining Out,Restaurant
+12/21/2025,"DoorDash, Inc.",-26.34,Food Delivery,Delivery
+12/21/2025,APPLE.COM/BILL,-7.61,Subscriptions,Apple Services
+12/21/2025,APPLE.COM/BILL,-7.61,Subscriptions,Apple Services
+12/20/2025,MARBLE,-49.0,Dining Out,Restaurant
+12/20/2025,MARBLE,-49.0,Dining Out,Restaurant
+12/20/2025,APPLE STORE #R594,-107.79,Subscriptions,Apple Services
+12/20/2025,APPLE STORE #R594,-107.79,Subscriptions,Apple Services
+12/20/2025,Farfetch.c,-166.96,Shopping,Clothing
+12/20/2025,DROPBOX*4RB2HZLGJN46,-19.99,Subscriptions,Apple Services
+12/20/2025,AMAZON.COM*YE4FR6QQ3,-8.58,Other,Unknown
+12/20/2025,PayPal Inc.,0.0,Services,PayPal Fees
+12/20/2025,DM 561,-3.39,Groceries,Deli/Market
+12/20/2025,DM 561,-3.39,Groceries,Deli/Market
+12/19/2025,AMAZON.COM*DF4C25N63,-24.97,Other,Unknown
+12/19/2025,BEST BUY MOBILE #2518-s06,-82.61,Transportation,Gas Station
+12/19/2025,"Uber Technologies, Inc",-29.03,Rideshare - Uber,Rideshare - Uber
+12/19/2025,"Uber Technologies, Inc",-8.23,Rideshare - Uber,Rideshare - Uber
+12/17/2025,crownbill.com,-17.99,Other,Unknown
+12/17/2025,APPLE STORE #R594,-162.22,Subscriptions,Apple Services
+12/17/2025,APPLE STORE #R594,-162.22,Subscriptions,Apple Services
+12/17/2025,TST*XIAN FAMOUS FOODS,-19.71,Dining Out,Restaurant
+12/17/2025,crownbill.com,-17.99,Other,Unknown
+12/17/2025,TST*XIAN FAMOUS FOODS,-19.71,Dining Out,Restaurant
+12/17/2025,JOES BUSY CORNER,-10.92,Other,Unknown
+12/17/2025,JOES BUSY CORNER,-10.92,Other,Unknown
+12/16/2025,Uber Eats,-35.01,Food Delivery,Delivery
+12/16/2025,Uber Eats,-52.08,Food Delivery,Delivery
+12/16/2025,BLOOMINGDALES  .COM,-381.06,Shopping,Clothing
+12/16/2025,BLOOMINGDALES  .COM,-381.06,Shopping,Clothing
+12/16/2025,"Uber Technologies, Inc",-28.93,Rideshare - Uber,Rideshare - Uber
+12/15/2025,Uber Eats,-34.07,Food Delivery,Delivery
+12/15/2025,STERLING DELI AND GROC,-17.16,Groceries,Deli/Market
+12/15/2025,"Uber Technologies, Inc",-25.02,Rideshare - Uber,Rideshare - Uber
+12/15/2025,"Uber Technologies, Inc",-26.03,Rideshare - Uber,Rideshare - Uber
+12/15/2025,Uber Eats,-32.42,Food Delivery,Delivery
+12/15/2025,TARGET.COM,-35.89,Groceries,Supermarket
+12/15/2025,STERLING DELI AND GROC,-17.16,Groceries,Deli/Market
+12/15/2025,"Uber Technologies, Inc",-12.15,Rideshare - Uber,Rideshare - Uber
+12/15/2025,SPK*SPOKEO SEARCH,-0.95,Subscriptions,Software
+12/15/2025,SPK*SPOKEO SEARCH,-0.95,Subscriptions,Software
+12/14/2025,Uber Eats,-34.15,Food Delivery,Delivery
+12/14/2025,"Uber Technologies, Inc",-25.1,Rideshare - Uber,Rideshare - Uber
+12/14/2025,AMAZON PRIME PMTS,-8.15,Subscriptions,Apple Services
+12/14/2025,PayPal Inc.,0.0,Services,PayPal Fees
+12/14/2025,AMAZON PRIME PMTS,-8.15,Subscriptions,Apple Services
+12/13/2025,T & T Organic Market I,-11.96,Groceries,Supermarket
+12/13/2025,WONDER,-13.01,Dining Out,Restaurant
+12/13/2025,WONDER,-27.11,Dining Out,Restaurant
+12/13/2025,WONDER,-27.11,Dining Out,Restaurant
+12/13/2025,Uber Eats,-37.47,Food Delivery,Delivery
+12/13/2025,T & T Organic Market I,-11.96,Groceries,Supermarket
+12/13/2025,EXXON EMPIRE AUTO REPA,-6.52,Transportation,Gas Station
+12/13/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+12/13/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+12/13/2025,EXXON EMPIRE AUTO REPA,-6.52,Transportation,Gas Station
+12/12/2025,SQ *HENA350INC,-2.5,Dining Out,Restaurant
+12/11/2025,WONDER-GRHUB*MEDUSAGRE,-20.69,Dining Out,Restaurant
+12/11/2025,WONDER-GRHUB*MEDUSAGRE,-20.69,Dining Out,Restaurant
+12/10/2025,VESTA  *AT&T PREPAID,-36.3,Bills & Housing,Phone/Internet
+12/10/2025,VESTA  *AT&T PREPAID,-36.3,Bills & Housing,Phone/Internet
+12/10/2025,BROWSERTRIX,-30.0,Other,Unknown
+12/10/2025,PayPal Inc.,0.0,Services,PayPal Fees
+12/10/2025,Apple Services,-11.95,Subscriptions,Apple Services
+12/09/2025,1037 NOSTRAND DELI LLC,-16.12,Groceries,Deli/Market
+12/09/2025,"Uber Technologies, Inc",-51.36,Rideshare - Uber,Rideshare - Uber
+12/09/2025,1037 NOSTRAND DELI LLC,-16.12,Groceries,Deli/Market
+12/09/2025,PayPal Inc.,-12.45,Services,PayPal Fees
+12/09/2025,PAYPRO *NEKTONY,-8.66,Subscriptions,Software
+12/09/2025,PAYPRO *NEKTONY,-8.66,Subscriptions,Software
+12/08/2025,TARGET T-1849,-107.26,Groceries,Supermarket
+12/08/2025,TRTHFDR*TRUTHFINDER,-32.54,Subscriptions,Software
+12/08/2025,TRTHFDR*TRUTHFINDER,-32.54,Subscriptions,Software
+12/08/2025,"Uber Technologies, Inc",-19.42,Rideshare - Uber,Rideshare - Uber
+12/08/2025,Apple Services,-9.99,Subscriptions,Apple Services
+12/07/2025,WONDER,-8.7,Dining Out,Restaurant
+12/07/2025,US MOBILE,-10.57,Transportation,Gas Station
+12/07/2025,US MOBILE,-10.57,Transportation,Gas Station
+12/07/2025,WONDER,-10.78,Dining Out,Restaurant
+12/07/2025,WONDER,-10.78,Dining Out,Restaurant
+12/07/2025,1037 NOSTRAND DELI LLC,-14.3,Groceries,Deli/Market
+12/07/2025,HERCULES CORP KIOSK,-25.0,Bills & Housing,Laundry
+12/07/2025,HERCULES CORP KIOSK,-25.0,Bills & Housing,Laundry
+12/07/2025,WONDER,-8.7,Dining Out,Restaurant
+12/07/2025,1037 NOSTRAND DELI LLC,-14.3,Groceries,Deli/Market
+12/07/2025,PayPal Inc.,0.0,Services,PayPal Fees
+12/07/2025,MTA*NYCT PAYGO RECOVER,-2.9,Transportation,Transit - Subway/Bus
+12/07/2025,MTA*NYCT PAYGO RECOVER,-2.9,Transportation,Transit - Subway/Bus
+12/06/2025,T & T Organic Market I,-19.76,Groceries,Supermarket
+12/06/2025,T & T Organic Market I,-19.76,Groceries,Supermarket
+12/06/2025,TST*JERUSALEM FALAFEL,-14.16,Dining Out,Restaurant
+12/06/2025,TST*JERUSALEM FALAFEL,-14.16,Dining Out,Restaurant
+12/05/2025,Apple Services,-21.32,Subscriptions,Apple Services
+12/05/2025,"Uber Technologies, Inc",-42.96,Rideshare - Uber,Rideshare - Uber
+12/05/2025,Apple Services,-6.52,Subscriptions,Apple Services
+12/05/2025,Apple Services,-2.17,Subscriptions,Apple Services
+12/05/2025,HP *INSTANT INK,-3.07,Other,Unknown
+12/05/2025,HP *INSTANT INK,-3.07,Other,Unknown
+12/03/2025,TRTHFDR*TRUTHFINDER,-4.34,Subscriptions,Software
+12/03/2025,TARGET.COM,-47.79,Groceries,Supermarket
+12/03/2025,T & T Organic Market I,-36.4,Groceries,Supermarket
+12/03/2025,T & T Organic Market I,-36.4,Groceries,Supermarket
+12/03/2025,TRTHFDR*TRUTHFINDER,-7.62,Subscriptions,Software
+12/03/2025,TRTHFDR*TRUTHFINDER,-7.62,Subscriptions,Software
+12/03/2025,TRTHFDR*TRUTHFINDER,-4.34,Subscriptions,Software
+12/03/2025,PayPal Inc.,0.0,Services,PayPal Fees
+12/02/2025,WONDER,-23.03,Dining Out,Restaurant
+12/02/2025,WONDER,-23.03,Dining Out,Restaurant
+12/01/2025,PIECE OF CAKE MOVING &,-270.75,Bills & Housing,Moving
+12/01/2025,PIECE OF CAKE MOVING &,-270.75,Bills & Housing,Moving
+12/01/2025,WONDER-GRHUB*EMVIETNAM,-25.04,Dining Out,Restaurant
+12/01/2025,WONDER-GRHUB*EMVIETNAM,-25.04,Dining Out,Restaurant
+12/01/2025,AFFIA MEAT AND GROCERY,-11.82,Groceries,Supermarket
+12/01/2025,AFFIA MEAT AND GROCERY,-11.82,Groceries,Supermarket
+11/30/2025,"Uber Technologies, Inc",-29.04,Rideshare - Uber,Rideshare - Uber
+11/30/2025,WONDER-GRHUB*TAVATURKI,-27.43,Dining Out,Restaurant
+11/30/2025,WONDER-GRHUB*TAVATURKI,-27.43,Dining Out,Restaurant
+11/30/2025,Uber Eats,-23.62,Food Delivery,Delivery
+11/29/2025,T & T Organic Market I,-11.96,Groceries,Supermarket
+11/29/2025,T & T Organic Market I,-11.96,Groceries,Supermarket
+11/29/2025,WONDER,-16.67,Dining Out,Restaurant
+11/29/2025,WONDER-GRHUB*EMVIETNAM,-19.6,Dining Out,Restaurant
+11/29/2025,WONDER-GRHUB*EMVIETNAM,-19.6,Dining Out,Restaurant
+11/29/2025,AFTERPAY,-10.27,Services,PayPal Fees
+11/29/2025,MTA*NYCT PAYGO RECOVER,-2.9,Transportation,Transit - Subway/Bus
+11/29/2025,MTA*NYCT PAYGO RECOVER,-2.9,Transportation,Transit - Subway/Bus
+11/29/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+11/29/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+11/28/2025,WWW.PAYWITHFOUR.COM,-30.5,Services,PayPal Fees
+11/28/2025,"Uber Technologies, Inc",-17.58,Rideshare - Uber,Rideshare - Uber
+11/28/2025,T & T Organic Market I,-19.24,Groceries,Supermarket
+11/28/2025,T & T Organic Market I,-19.24,Groceries,Supermarket
+11/28/2025,1037 NOSTRAN-725997,-64.49,Groceries,Deli/Market
+11/28/2025,NOSTRAND SMELL SO SWEE,-58.23,Groceries,Deli/Market
+11/28/2025,NOSTRAND SMELL SO SWEE,-58.23,Groceries,Deli/Market
+11/28/2025,WONDER,-12.47,Dining Out,Restaurant
+11/28/2025,AFFIA MEAT AND GROCERY,-11.98,Groceries,Supermarket
+11/28/2025,WALGREENS STORE,-3.29,Health,Pharmacy
+11/28/2025,AFFIA MEAT AND GROCERY,-11.98,Groceries,Supermarket
+11/27/2025,"Uber Technologies, Inc",-42.26,Rideshare - Uber,Rideshare - Uber
+11/27/2025,"Uber Technologies, Inc",-9.99,Rideshare - Uber,Rideshare - Uber
+11/27/2025,PayPal Inc.,0.0,Services,PayPal Fees
+11/25/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+11/25/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+11/23/2025,HERCULES CORP KIOSK,-20.0,Bills & Housing,Laundry
+11/23/2025,HERCULES CORP KIOSK,-20.0,Bills & Housing,Laundry
+11/22/2025,UBER   * EATS PENDING,-19.56,Rideshare - Uber,Rideshare - Uber
+11/22/2025,TARGET.COM,-103.13,Groceries,Supermarket
+11/22/2025,TARGET.COM,-39.38,Groceries,Supermarket
+11/22/2025,TARGET.COM,-39.38,Groceries,Supermarket
+11/22/2025,UBER   * EATS PENDING,-19.56,Rideshare - Uber,Rideshare - Uber
+11/22/2025,TARGET.COM,-103.13,Groceries,Supermarket
+11/22/2025,TARGET.COM,-10.17,Groceries,Supermarket
+11/22/2025,TARGET.COM,-10.17,Groceries,Supermarket
+11/21/2025,T & T Organic Market I,-21.84,Groceries,Supermarket
+11/21/2025,T & T Organic Market I,-21.84,Groceries,Supermarket
+11/20/2025,WONDER,-15.58,Dining Out,Restaurant
+11/20/2025,1037 NOSTRAND DELI LLC,-15.6,Groceries,Deli/Market
+11/20/2025,1037 NOSTRAND DELI LLC,-15.6,Groceries,Deli/Market
+11/20/2025,WONDER,-15.58,Dining Out,Restaurant
+11/19/2025,"Uber Technologies, Inc",-41.16,Rideshare - Uber,Rideshare - Uber
+11/19/2025,"Uber Technologies, Inc",-33.27,Rideshare - Uber,Rideshare - Uber
+11/19/2025,"Uber Technologies, Inc",-31.94,Rideshare - Uber,Rideshare - Uber
+11/17/2025,PayPal Inc.,-1.0,Services,PayPal Fees
+11/16/2025,WONDER-GRHUB*KABOBSHAC,-17.69,Dining Out,Restaurant
+11/16/2025,WONDER-GRHUB*KABOBSHAC,-17.69,Dining Out,Restaurant
+11/16/2025,UBR* PENDING.UBER.COM,-23.31,Rideshare - Uber,Rideshare - Uber
+11/16/2025,UBR* PENDING.UBER.COM,-23.31,Rideshare - Uber,Rideshare - Uber
+11/16/2025,TST*JERUSALEM FALAFEL,-14.4,Dining Out,Restaurant
+11/16/2025,TST*JERUSALEM FALAFEL,-14.4,Dining Out,Restaurant
+11/16/2025,FOUR*PLUS*SUBSCRIPTION,-12.99,Other,Unknown
+11/16/2025,FOUR*PLUS*SUBSCRIPTION,-12.99,Other,Unknown
+11/16/2025,PayPal Inc.,0.0,Services,PayPal Fees
+11/16/2025,1037 NOSTRAND DELI LLC,-7.02,Groceries,Deli/Market
+11/16/2025,1037 NOSTRAND DELI LLC,-7.02,Groceries,Deli/Market
+11/15/2025,TST*JERUSALEM FALAFEL,-18.52,Dining Out,Restaurant
+11/15/2025,GLORIA CARRI-617169,-24.5,Other,Unknown
+11/15/2025,TST*JERUSALEM FALAFEL,-18.52,Dining Out,Restaurant
+11/15/2025,PayPal Inc.,0.0,Services,PayPal Fees
+11/14/2025,TST*JERUSALEM FALAFEL,-11.98,Dining Out,Restaurant
+11/14/2025,TST*JERUSALEM FALAFEL,-11.98,Dining Out,Restaurant
+11/14/2025,1037 NOSTRAND DELI LLC,-6.76,Groceries,Deli/Market
+11/14/2025,1037 NOSTRAND DELI LLC,-6.76,Groceries,Deli/Market
+11/13/2025,TST*XIAN FAMOUS FOODS,-16.17,Dining Out,Restaurant
+11/13/2025,DB SMOKE SHOP,-20.8,Tobacco/Vape,Tobacco/Vape
+11/13/2025,DB SMOKE SHOP,-20.8,Tobacco/Vape,Tobacco/Vape
+11/13/2025,AMAZON.COM*B808H8X30,-21.76,Other,Unknown
+11/13/2025,UBER   *TRIP,-25.62,Rideshare - Uber,Rideshare - Uber
+11/13/2025,UBR* PENDING.UBER.COM,-42.37,Rideshare - Uber,Rideshare - Uber
+11/13/2025,UBR* PENDING.UBER.COM,-25.64,Rideshare - Uber,Rideshare - Uber
+11/13/2025,UBR* PENDING.UBER.COM,-42.37,Rideshare - Uber,Rideshare - Uber
+11/13/2025,DB SMOKE SHOP,-44.2,Tobacco/Vape,Tobacco/Vape
+11/13/2025,DB SMOKE SHOP,-44.2,Tobacco/Vape,Tobacco/Vape
+11/13/2025,TST*XIAN FAMOUS FOODS,-16.17,Dining Out,Restaurant
+11/13/2025,PayPal Inc.,0.0,Services,PayPal Fees
+11/13/2025,SQ *DIVINE SNACKS,-2.5,Dining Out,Restaurant
+11/13/2025,SQ *DIVINE SNACKS,-2.5,Dining Out,Restaurant
+11/12/2025,WWW.PAYWITHFOUR.COM,-30.5,Services,PayPal Fees
+11/11/2025,T & T Organic Market I,-32.76,Groceries,Supermarket
+11/11/2025,UBR* PENDING.UBER.COM,-17.99,Rideshare - Uber,Rideshare - Uber
+11/11/2025,WONDER,-21.67,Dining Out,Restaurant
+11/11/2025,WONDER,-21.67,Dining Out,Restaurant
+11/11/2025,Nike US Stores,-164.7,Shopping,Clothing
+11/11/2025,NOSTRAND SMELL SO SWEE,-23.91,Groceries,Deli/Market
+11/11/2025,T & T Organic Market I,-32.76,Groceries,Supermarket
+11/11/2025,TARGET.COM,-98.99,Groceries,Supermarket
+11/11/2025,Nike US Stores,-164.7,Shopping,Clothing
+11/11/2025,TARGET.COM,-15.0,Groceries,Supermarket
+11/11/2025,UBR* PENDING.UBER.COM,-17.99,Rideshare - Uber,Rideshare - Uber
+11/11/2025,NOSTRAND SMELL SO SWEE,-23.91,Groceries,Deli/Market
+11/11/2025,AMAZON.COM*BT4QY6QW2,-10.87,Other,Unknown
+11/11/2025,WWW.PAYWITHFOUR.COM,-7.0,Services,PayPal Fees
+11/11/2025,WWW.PAYWITHFOUR.COM,-7.0,Services,PayPal Fees
+11/11/2025,PayPal Inc.,0.0,Services,PayPal Fees
+11/10/2025,HP *ALL- IN PLAN,-23.48,Other,Unknown
+11/10/2025,WONDER,-20.58,Dining Out,Restaurant
+11/10/2025,TARGET T-1849,-73.88,Groceries,Supermarket
+11/10/2025,HP *ALL- IN PLAN,-13.68,Other,Unknown
+11/10/2025,CASH APP*CASH APP CARD,-5.44,Other,Unknown
+11/10/2025,1037 NOSTRAND DELI LLC,-5.72,Groceries,Deli/Market
+11/10/2025,1037 NOSTRAND DELI LLC,-5.72,Groceries,Deli/Market
+11/10/2025,PayPal Inc.,0.0,Services,PayPal Fees
+11/09/2025,US MOBILE,-10.57,Transportation,Gas Station
+11/09/2025,US MOBILE,-10.57,Transportation,Gas Station
+11/09/2025,CASH APP*JAMES GARDELL,-20.0,Other,Unknown
+11/09/2025,Uber Eats,-21.82,Food Delivery,Delivery
+11/09/2025,Uber Eats,-25.54,Food Delivery,Delivery
+11/09/2025,VESTA  *AT&T PREPAID,-36.3,Bills & Housing,Phone/Internet
+11/09/2025,VESTA  *AT&T PREPAID,-36.3,Bills & Housing,Phone/Internet
+11/09/2025,PAYPRO *NEKTONY,-8.66,Subscriptions,Software
+11/09/2025,PAYPRO *NEKTONY,-8.66,Subscriptions,Software
+11/09/2025,T & T Organic Market I,-7.8,Groceries,Supermarket
+11/09/2025,T & T Organic Market I,-7.8,Groceries,Supermarket
+11/08/2025,Uber Eats,-17.8,Food Delivery,Delivery
+11/08/2025,OXFORD PHARMACY,-11.39,Shopping,Clothing
+11/08/2025,OXFORD PHARMACY,-11.39,Shopping,Clothing
+11/08/2025,Apple Services,-14.38,Subscriptions,Apple Services
+11/08/2025,TST*XIAN FAMOUS FOODS,-15.41,Dining Out,Restaurant
+11/08/2025,TST*XIAN FAMOUS FOODS,-15.41,Dining Out,Restaurant
+11/08/2025,WONDER,-21.67,Dining Out,Restaurant
+11/08/2025,Uber Eats,-24.44,Food Delivery,Delivery
+11/08/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+11/08/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+11/08/2025,Apple Services,-5.31,Subscriptions,Apple Services
+11/08/2025,PayPal Inc.,0.0,Services,PayPal Fees
+11/07/2025,TST*JERUSALEM FALAFEL,-14.15,Dining Out,Restaurant
+11/07/2025,STERLING DELI AND GROC,-8.84,Groceries,Deli/Market
+11/07/2025,1037 NOSTRAND DELI LLC,-13.52,Groceries,Deli/Market
+11/07/2025,1037 NOSTRAND DELI LLC,-13.52,Groceries,Deli/Market
+11/07/2025,TST*JERUSALEM FALAFEL,-14.15,Dining Out,Restaurant
+11/07/2025,T & T Organic Market I,-18.72,Groceries,Supermarket
+11/07/2025,T & T Organic Market I,-18.72,Groceries,Supermarket
+11/07/2025,HERCULES CORP KIOSK,-20.0,Bills & Housing,Laundry
+11/07/2025,HERCULES CORP KIOSK,-20.0,Bills & Housing,Laundry
+11/07/2025,STERLING DELI AND GROC,-8.84,Groceries,Deli/Market
+11/07/2025,TST*JERUSALEM FALAFEL,-1.64,Dining Out,Restaurant
+11/07/2025,1037 NOSTRAND DELI LLC,-2.08,Groceries,Deli/Market
+11/07/2025,TST*JERUSALEM FALAFEL,-1.64,Dining Out,Restaurant
+11/07/2025,1037 NOSTRAND DELI LLC,-2.08,Groceries,Deli/Market
+11/05/2025,MTA*NYCT PAYGO RECOVER,-5.8,Transportation,Transit - Subway/Bus
+11/05/2025,UBER   * EATS PENDING,-23.25,Rideshare - Uber,Rideshare - Uber
+11/05/2025,UBER   * EATS PENDING,-23.25,Rideshare - Uber,Rideshare - Uber
+11/05/2025,MTA*NYCT PAYGO RECOVER,-5.8,Transportation,Transit - Subway/Bus
+11/04/2025,LIVE GOOD PHARMACY INC,-18.67,Shopping,Clothing
+11/04/2025,LIVE GOOD PHARMACY INC,-18.67,Shopping,Clothing
+11/04/2025,TST*XIAN FAMOUS FOODS,-18.62,Dining Out,Restaurant
+11/04/2025,TST*XIAN FAMOUS FOODS,-18.62,Dining Out,Restaurant
+11/04/2025,TARGET.COM,-5.0,Groceries,Supermarket
+11/04/2025,T & T Organic Market I,-19.24,Groceries,Supermarket
+11/04/2025,TST*MAMA PHO - GRAND S,-8.97,Dining Out,Restaurant
+11/04/2025,TST*MAMA PHO - GRAND S,-8.97,Dining Out,Restaurant
+11/04/2025,TARGET.COM,-8.88,Groceries,Supermarket
+11/04/2025,T & T Organic Market I,-19.24,Groceries,Supermarket
+11/04/2025,CURB MOBILITY,-48.45,Rideshare - Uber,Rideshare - Uber
+11/04/2025,"Uber Technologies, Inc",-19.37,Rideshare - Uber,Rideshare - Uber
+11/04/2025,UBER   * EATS PENDING,-41.27,Rideshare - Uber,Rideshare - Uber
+11/04/2025,UBER   * EATS PENDING,-41.27,Rideshare - Uber,Rideshare - Uber
+11/04/2025,1037 NOSTRAND DELI LLC,-41.6,Groceries,Deli/Market
+11/04/2025,1037 NOSTRAND DELI LLC,-41.6,Groceries,Deli/Market
+11/04/2025,CURB MOBILITY,-48.45,Rideshare - Uber,Rideshare - Uber
+11/04/2025,TARGET.COM,-90.86,Groceries,Supermarket
+11/04/2025,TARGET.COM,-90.86,Groceries,Supermarket
+11/04/2025,CITIBIK*TEMP HOLD,-4.99,Transportation,Transit - Subway/Bus
+11/04/2025,CITIBIK*TEMP HOLD,-4.99,Transportation,Transit - Subway/Bus
+11/04/2025,T & T Organic Market I,-4.16,Groceries,Supermarket
+11/04/2025,T & T Organic Market I,-4.16,Groceries,Supermarket
+11/04/2025,PayPal Inc.,-0.74,Services,PayPal Fees
+11/04/2025,TARGET.COM,-3.88,Groceries,Supermarket
+11/04/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+11/04/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+11/04/2025,PayPal Inc.,0.0,Services,PayPal Fees
+11/03/2025,WONDER,-23.84,Dining Out,Restaurant
+11/03/2025,Apple Services,-21.32,Subscriptions,Apple Services
+11/03/2025,Apple Services,-10.88,Subscriptions,Apple Services
+11/03/2025,Apple Services,-9.24,Subscriptions,Apple Services
+11/03/2025,TARGET T-2850,-29.39,Groceries,Supermarket
+11/03/2025,PayPal Inc.,-52.33,Services,PayPal Fees
+11/03/2025,SQ *DIVINE SNACKS,-7.25,Dining Out,Restaurant
+11/03/2025,1037 NOSTRAND DELI LLC,-5.91,Groceries,Deli/Market
+11/03/2025,1037 NOSTRAND DELI LLC,-5.91,Groceries,Deli/Market
+11/03/2025,SQ *DIVINE SNACKS,-2.5,Dining Out,Restaurant
+11/02/2025,T & T Organic Market I,-15.6,Groceries,Supermarket
+11/02/2025,WWW.PAYWITHFOUR.COM,-31.68,Services,PayPal Fees
+11/02/2025,1037 NOSTRAND DELI LLC,-13.52,Groceries,Deli/Market
+11/02/2025,T & T Organic Market I,-41.6,Groceries,Supermarket
+11/02/2025,T & T Organic Market I,-41.6,Groceries,Supermarket
+11/02/2025,1037 NOSTRAND DELI LLC,-13.52,Groceries,Deli/Market
+11/02/2025,T & T Organic Market I,-15.6,Groceries,Supermarket
+11/02/2025,PayPal Inc.,0.0,Services,PayPal Fees
+11/02/2025,T & T Organic Market I,-4.16,Groceries,Supermarket
+11/02/2025,T & T Organic Market I,-4.16,Groceries,Supermarket
+11/01/2025,1037 NOSTRAND DELI LLC,-15.6,Groceries,Deli/Market
+11/01/2025,1037 NOSTRAND DELI LLC,-15.6,Groceries,Deli/Market
+11/01/2025,UBER   *EATS,-22.53,Rideshare - Uber,Rideshare - Uber
+11/01/2025,UBER   *EATS,-22.53,Rideshare - Uber,Rideshare - Uber
+11/01/2025,WWW.PAYWITHFOUR.COM,-30.5,Services,PayPal Fees
+11/01/2025,Uber Eats,-33.89,Food Delivery,Delivery
+10/31/2025,WONDER-GRHUB*SUNSHINEB,-21.49,Dining Out,Restaurant
+10/31/2025,WONDER-GRHUB*SUNSHINEB,-21.49,Dining Out,Restaurant
+10/31/2025,WWW.PAYWITHFOUR.COM,-7.0,Services,PayPal Fees
+10/31/2025,1037 NOSTRAND DELI LLC,-4.42,Groceries,Deli/Market
+10/31/2025,CHICK-FIL-A #05579,-6.2,Dining Out,Fast Food
+10/31/2025,1037 NOSTRAND DELI LLC,-4.42,Groceries,Deli/Market
+10/31/2025,CHICK-FIL-A #05579,-6.2,Dining Out,Fast Food
+10/30/2025,TST*MAMA PHO - GRAND S,-10.45,Dining Out,Restaurant
+10/30/2025,TST*MAMA PHO - GRAND S,-10.45,Dining Out,Restaurant
+10/30/2025,PayPal Inc.,-12.63,Services,PayPal Fees
+10/30/2025,CITIBIK*1 RIDE,-16.99,Transportation,Transit - Subway/Bus
+10/30/2025,"Uber Technologies, Inc",-22.62,Rideshare - Uber,Rideshare - Uber
+10/30/2025,Uber Eats,-23.58,Food Delivery,Delivery
+10/30/2025,MTA*NYCT PAYGO RECOVER,-5.8,Transportation,Transit - Subway/Bus
+10/30/2025,MTA*NYCT PAYGO RECOVER,-5.8,Transportation,Transit - Subway/Bus
+10/30/2025,PayPal Inc.,0.0,Services,PayPal Fees
+10/30/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+10/30/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+10/29/2025,PayPal Inc.,0.0,Services,PayPal Fees
+10/28/2025,T & T Organic Market I,-7.28,Groceries,Supermarket
+10/28/2025,T & T Organic Market I,-7.28,Groceries,Supermarket
+10/28/2025,PayPal Inc.,0.0,Services,PayPal Fees
+10/27/2025,WONDER,-23.42,Dining Out,Restaurant
+10/27/2025,WONDER,-23.42,Dining Out,Restaurant
+10/27/2025,Uber Eats,-28.79,Food Delivery,Delivery
+10/26/2025,CITIBIK*TEMP HOLD,-4.99,Transportation,Transit - Subway/Bus
+10/26/2025,"Uber Technologies, Inc",-22.91,Rideshare - Uber,Rideshare - Uber
+10/26/2025,T & T Organic Market I,-15.6,Groceries,Supermarket
+10/26/2025,T & T Organic Market I,-15.6,Groceries,Supermarket
+10/26/2025,CITIBIK*TEMP HOLD,-4.99,Transportation,Transit - Subway/Bus
+10/26/2025,STERLING DELI AND GROC,-2.6,Groceries,Deli/Market
+10/26/2025,STERLING DELI AND GROC,-2.6,Groceries,Deli/Market
+10/25/2025,1037 NOSTRAND DELI LLC,-18.72,Groceries,Deli/Market
+10/25/2025,1037 NOSTRAND DELI LLC,-18.72,Groceries,Deli/Market
+10/24/2025,T & T Organic Market I,-15.6,Groceries,Supermarket
+10/24/2025,T & T Organic Market I,-15.6,Groceries,Supermarket
+10/24/2025,TARGET.COM,-48.26,Groceries,Supermarket
+10/24/2025,1037 NOSTRAND DELI LLC,-2.6,Groceries,Deli/Market
+10/24/2025,1037 NOSTRAND DELI LLC,-2.6,Groceries,Deli/Market
+10/23/2025,UBER   * EATS PENDING,-39.02,Rideshare - Uber,Rideshare - Uber
+10/23/2025,SQ *SUPREME NY PIZZA 1,-4.23,Dining Out,Restaurant
+10/23/2025,MTA*NYCT PAYGO RECOVER,-5.8,Transportation,Transit - Subway/Bus
+10/23/2025,MTA*NYCT PAYGO RECOVER,-5.8,Transportation,Transit - Subway/Bus
+10/23/2025,HALAL FOOD,-11.22,Other,Unknown
+10/23/2025,HALAL FOOD,-11.22,Other,Unknown
+10/23/2025,UBER   * EATS PENDING,-39.02,Rideshare - Uber,Rideshare - Uber
+10/23/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+10/23/2025,SQ *SUPREME NY PIZZA 1,-4.23,Dining Out,Restaurant
+10/23/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+10/23/2025,OPENAI *CHATGPT SUBSCR,-1.09,Other,Unknown
+10/23/2025,OPENAI *CHATGPT SUBSCR,-1.09,Other,Unknown
+10/22/2025,T & T Organic Market I,-15.6,Groceries,Supermarket
+10/22/2025,T & T Organic Market I,-11.44,Groceries,Supermarket
+10/22/2025,T & T Organic Market I,-11.44,Groceries,Supermarket
+10/22/2025,WESTSIDE MARKET,-6.08,Groceries,Supermarket
+10/22/2025,SQ *REDA FRESH HALAL F,-7.53,Dining Out,Restaurant
+10/22/2025,SQ *REDA FRESH HALAL F,-6.53,Dining Out,Restaurant
+10/22/2025,HERCULES CORP KIOSK,-20.0,Bills & Housing,Laundry
+10/22/2025,HERCULES CORP KIOSK,-20.0,Bills & Housing,Laundry
+10/22/2025,SQ *REDA FRESH HALAL F,-5.44,Dining Out,Restaurant
+10/22/2025,UBER   * PENDING,-55.95,Rideshare - Uber,Rideshare - Uber
+10/22/2025,UBER   * PENDING,-55.95,Rideshare - Uber,Rideshare - Uber
+10/22/2025,SQ *REDA FRESH HALAL F,-5.44,Dining Out,Restaurant
+10/21/2025,CITIBIK*1 RIDE,-1.18,Transportation,Transit - Subway/Bus
+10/20/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+10/20/2025,1037 NOSTRAND DELI LLC,-13.0,Groceries,Deli/Market
+10/20/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+10/20/2025,JC DELI & GRILL,-6.22,Groceries,Deli/Market
+10/20/2025,1037 NOSTRAND DELI LLC,-7.8,Groceries,Deli/Market
+10/20/2025,1037 NOSTRAND DELI LLC,-7.8,Groceries,Deli/Market
+10/20/2025,1037 NOSTRAND DELI LLC,-13.0,Groceries,Deli/Market
+10/20/2025,UBER   * EATS PENDING,-19.55,Rideshare - Uber,Rideshare - Uber
+10/20/2025,UBER   * EATS PENDING,-19.55,Rideshare - Uber,Rideshare - Uber
+10/20/2025,STERLING DELI AND GROC,-2.6,Groceries,Deli/Market
+10/20/2025,STERLING DELI AND GROC,-2.6,Groceries,Deli/Market
+10/20/2025,JC DELI & GRILL,-6.22,Groceries,Deli/Market
+10/20/2025,T & T Organic Market I,-2.6,Groceries,Supermarket
+10/20/2025,T & T Organic Market I,-2.6,Groceries,Supermarket
+10/20/2025,CITIBIK*TEMP HOLD,-1.0,Transportation,Transit - Subway/Bus
+10/20/2025,CITIBIK*TEMP HOLD,-1.0,Transportation,Transit - Subway/Bus
+10/19/2025,*HALAL HUT,-14.14,Other,Unknown
+10/19/2025,CITIBIK*1 RIDE,-7.44,Transportation,Transit - Subway/Bus
+10/19/2025,T & T Organic Market I,-7.8,Groceries,Supermarket
+10/19/2025,T & T Organic Market I,-7.8,Groceries,Supermarket
+10/19/2025,FOUR*PLUS*SUBSCRIPTION,-12.99,Other,Unknown
+10/19/2025,FOUR*PLUS*SUBSCRIPTION,-12.99,Other,Unknown
+10/19/2025,*HALAL HUT,-14.14,Other,Unknown
+10/19/2025,TST*JERUSALEM FALAFEL,-21.68,Dining Out,Restaurant
+10/19/2025,TST*JERUSALEM FALAFEL,-21.68,Dining Out,Restaurant
+10/19/2025,VESTA  *AT&T PREPAID,-26.25,Bills & Housing,Phone/Internet
+10/19/2025,VESTA  *AT&T PREPAID,-26.25,Bills & Housing,Phone/Internet
+10/19/2025,T & T Organic Market I,-5.2,Groceries,Supermarket
+10/19/2025,T & T Organic Market I,-5.2,Groceries,Supermarket
+10/19/2025,PayPal Inc.,0.0,Services,PayPal Fees
+10/18/2025,T & T Organic Market I,-11.44,Groceries,Supermarket
+10/18/2025,1037 NOSTRAND DELI LLC,-5.2,Groceries,Deli/Market
+10/18/2025,1037 NOSTRAND DELI LLC,-5.2,Groceries,Deli/Market
+10/18/2025,UBR* PENDING.UBER.COM,-21.95,Rideshare - Uber,Rideshare - Uber
+10/18/2025,T & T Organic Market I,-20.8,Groceries,Supermarket
+10/18/2025,T & T Organic Market I,-20.8,Groceries,Supermarket
+10/18/2025,UBER   *TRIP,-21.94,Rideshare - Uber,Rideshare - Uber
+10/18/2025,UBER   *TRIP,-21.94,Rideshare - Uber,Rideshare - Uber
+10/18/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+10/18/2025,T & T Organic Market I,-11.44,Groceries,Supermarket
+10/18/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+10/18/2025,T & T Organic Market I,-2.66,Groceries,Supermarket
+10/18/2025,T & T Organic Market I,-2.66,Groceries,Supermarket
+10/18/2025,T & T Organic Market I,-2.54,Groceries,Supermarket
+10/18/2025,THE VILLAGE SMOKE LOFT,-1.69,Tobacco/Vape,Tobacco/Vape
+10/18/2025,THE VILLAGE SMOKE LOFT,-1.69,Tobacco/Vape,Tobacco/Vape
+10/18/2025,T & T Organic Market I,-2.54,Groceries,Supermarket
+10/18/2025,PayPal Inc.,-1.45,Services,PayPal Fees
+10/18/2025,CITIBIK*1 RIDE,-1.0,Transportation,Transit - Subway/Bus
+10/18/2025,CITIBIK*TEMP HOLD,-1.0,Transportation,Transit - Subway/Bus
+10/17/2025,NOSTRAND DELICATESSEN,-5.74,Groceries,Deli/Market
+10/17/2025,STERLING DELI AND GROC,-15.34,Groceries,Deli/Market
+10/17/2025,STERLING DELI AND GROC,-15.34,Groceries,Deli/Market
+10/17/2025,NOSTRAND SMELL SO SWEE,-12.45,Groceries,Deli/Market
+10/17/2025,NOSTRAND SMELL SO SWEE,-12.45,Groceries,Deli/Market
+10/17/2025,PayPal Inc.,0.0,Services,PayPal Fees
+10/16/2025,PayPal Inc.,0.0,Services,PayPal Fees
+10/15/2025,WWW.PAYWITHFOUR.COM,-31.68,Services,PayPal Fees
+10/15/2025,WWW.PAYWITHFOUR.COM,-31.68,Services,PayPal Fees
+10/14/2025,TST*XIAN FAMOUS FOODS,-10.51,Dining Out,Restaurant
+10/14/2025,TST*XIAN FAMOUS FOODS,-10.51,Dining Out,Restaurant
+10/14/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+10/14/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+10/14/2025,PayPal Inc.,0.0,Services,PayPal Fees
+10/14/2025,PayPal Inc.,-1.09,Services,PayPal Fees
+10/13/2025,WWW.PAYWITHFOUR.COM,-28.77,Services,PayPal Fees
+10/13/2025,TST* XI'AN FAMOUS FOOD,-18.62,Dining Out,Restaurant
+10/13/2025,TST* XI'AN FAMOUS FOOD,-18.62,Dining Out,Restaurant
+10/13/2025,WWW.PAYWITHFOUR.COM,-28.52,Services,PayPal Fees
+10/13/2025,WWW.PAYWITHFOUR.COM,-28.52,Services,PayPal Fees
+10/13/2025,1037 NOSTRAND DELI LLC,-7.02,Groceries,Deli/Market
+10/13/2025,1037 NOSTRAND DELI LLC,-7.02,Groceries,Deli/Market
+10/13/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+10/12/2025,1037 NOSTRAND DELI LLC,-7.28,Groceries,Deli/Market
+10/12/2025,UBER   * EATS PENDING,-21.45,Rideshare - Uber,Rideshare - Uber
+10/12/2025,UBER   * EATS PENDING,-21.45,Rideshare - Uber,Rideshare - Uber
+10/12/2025,VESTA  *AT&T PREPAID,-22.24,Bills & Housing,Phone/Internet
+10/12/2025,VESTA  *AT&T PREPAID,-22.24,Bills & Housing,Phone/Internet
+10/12/2025,Customer Service - Epoch,-24.99,Other,Unknown
+10/12/2025,T & T Organic Market I,-7.28,Groceries,Supermarket
+10/12/2025,1037 NOSTRAND DELI LLC,-7.28,Groceries,Deli/Market
+10/12/2025,T & T Organic Market I,-7.28,Groceries,Supermarket
+10/12/2025,PayPal Inc.,-1.0,Services,PayPal Fees
+10/12/2025,CITIBIK*TEMP HOLD,-2.45,Transportation,Transit - Subway/Bus
+10/11/2025,PayPal Inc.,-11.92,Services,PayPal Fees
+10/11/2025,PayPal Inc.,-21.23,Services,PayPal Fees
+10/11/2025,CHICK-FIL-A #04274,-6.37,Dining Out,Fast Food
+10/11/2025,CHICK-FIL-A #04274,-6.37,Dining Out,Fast Food
+10/11/2025,CITIBIK*1 RIDE,-0.45,Transportation,Transit - Subway/Bus
+10/11/2025,MTA*NYCT PAYGO RECOVER,-5.8,Transportation,Transit - Subway/Bus
+10/11/2025,MTA*NYCT PAYGO RECOVER,-5.8,Transportation,Transit - Subway/Bus
+10/11/2025,CITIBIK*1 RIDE,-0.45,Transportation,Transit - Subway/Bus
+10/10/2025,SQ *HENA350INC,-10.5,Dining Out,Restaurant
+10/10/2025,SQ *HENA350INC,-10.5,Dining Out,Restaurant
+10/10/2025,T & T Organic Market I,-7.28,Groceries,Supermarket
+10/10/2025,TST*MAMA PHO - GRAND S,-8.97,Dining Out,Restaurant
+10/10/2025,TST*MAMA PHO - GRAND S,-8.97,Dining Out,Restaurant
+10/10/2025,1037 NOSTRAND DELI LLC,-17.68,Groceries,Deli/Market
+10/10/2025,1037 NOSTRAND DELI LLC,-17.68,Groceries,Deli/Market
+10/10/2025,DD *DOORDASH POPEYESLO,-25.75,Dining Out,Fast Food
+10/10/2025,UBER   *EATS,-20.55,Rideshare - Uber,Rideshare - Uber
+10/10/2025,UBER   *EATS,-20.55,Rideshare - Uber,Rideshare - Uber
+10/10/2025,UBER   * EATS PENDING,-23.25,Rideshare - Uber,Rideshare - Uber
+10/10/2025,UBER   * EATS PENDING,-23.25,Rideshare - Uber,Rideshare - Uber
+10/10/2025,STERLING DELI AND GROC,-5.2,Groceries,Deli/Market
+10/10/2025,DD *DOORDASH POPEYESLO,-25.75,Dining Out,Fast Food
+10/10/2025,WWW.PAYWITHFOUR.COM,-31.68,Services,PayPal Fees
+10/10/2025,LYFT   *TEMP AUTH HOLD,-34.63,Rideshare - Uber,Rideshare - Uber
+10/10/2025,LYFT   *TEMP AUTH HOLD,-34.63,Rideshare - Uber,Rideshare - Uber
+10/10/2025,SQ *HENA350INC,-6.0,Dining Out,Restaurant
+10/10/2025,T & T Organic Market I,-7.28,Groceries,Supermarket
+10/10/2025,STERLING DELI AND GROC,-5.2,Groceries,Deli/Market
+10/10/2025,CITIBIK*TEMP HOLD,-4.99,Transportation,Transit - Subway/Bus
+10/10/2025,T & T Organic Market I,-3.12,Groceries,Supermarket
+10/10/2025,T & T Organic Market I,-3.12,Groceries,Supermarket
+10/10/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+10/10/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+10/10/2025,CITIBIK*TEMP HOLD,-4.99,Transportation,Transit - Subway/Bus
+10/09/2025,T & T Organic Market I,-15.08,Groceries,Supermarket
+10/09/2025,T & T Organic Market I,-15.08,Groceries,Supermarket
+10/09/2025,DD *DOORDASH CHURCHAVE,-36.24,Food Delivery,Delivery
+10/09/2025,DD *DOORDASH CHURCHAVE,-36.24,Food Delivery,Delivery
+10/09/2025,CITIBIK*SUBSCRIPTION,-5.33,Transportation,Transit - Subway/Bus
+10/09/2025,SQ *HENA350INC,-2.5,Dining Out,Restaurant
+10/09/2025,PayPal Inc.,0.0,Services,PayPal Fees
+10/09/2025,1037 NOSTRAND DELI LLC,-4.16,Groceries,Deli/Market
+10/09/2025,1037 NOSTRAND DELI LLC,-4.16,Groceries,Deli/Market
+10/08/2025,PayPal Inc.,-15.78,Services,PayPal Fees
+10/08/2025,T & T Organic Market I,-7.8,Groceries,Supermarket
+10/08/2025,T & T Organic Market I,-7.8,Groceries,Supermarket
+10/08/2025,WWW.PAYWITHFOUR.COM,-8.0,Services,PayPal Fees
+10/08/2025,DD *DOORDASH DOMINOS,-12.82,Food Delivery,Delivery
+10/08/2025,DD *DOORDASH DOMINOS,-12.82,Food Delivery,Delivery
+10/08/2025,PayPal Inc.,-15.14,Services,PayPal Fees
+10/08/2025,DD *DOORDASH DOMINOS,-15.81,Food Delivery,Delivery
+10/08/2025,DD *DOORDASH DOMINOS,-15.81,Food Delivery,Delivery
+10/08/2025,T & T Organic Market I,-7.28,Groceries,Supermarket
+10/08/2025,WWW.PAYWITHFOUR.COM,-8.0,Services,PayPal Fees
+10/08/2025,T & T Organic Market I,-7.28,Groceries,Supermarket
+10/08/2025,1037 NOSTRAND DELI LLC,-6.76,Groceries,Deli/Market
+10/08/2025,PayPal Inc.,0.0,Services,PayPal Fees
+10/08/2025,PayPal Inc.,-0.15,Services,PayPal Fees
+10/08/2025,1037 NOSTRAND DELI LLC,-5.2,Groceries,Deli/Market
+10/08/2025,1037 NOSTRAND DELI LLC,-5.2,Groceries,Deli/Market
+10/08/2025,1037 NOSTRAND DELI LLC,-6.76,Groceries,Deli/Market
+10/07/2025,DD *DOORDASH BROOKLYNP,-23.31,Food Delivery,Delivery
+10/07/2025,DD *DOORDASH BROOKLYNP,-23.31,Food Delivery,Delivery
+10/07/2025,PayPal Inc.,0.0,Services,PayPal Fees
+10/07/2025,T & T Organic Market I,-3.64,Groceries,Supermarket
+10/07/2025,MCDONALD'S F2814,-4.77,Dining Out,Fast Food
+10/07/2025,MCDONALD'S F2814,-4.77,Dining Out,Fast Food
+10/07/2025,T & T Organic Market I,-3.64,Groceries,Supermarket
+10/06/2025,1037 NOSTRAND DELI LLC,-6.76,Groceries,Deli/Market
+10/06/2025,1037 NOSTRAND DELI LLC,-7.8,Groceries,Deli/Market
+10/06/2025,1037 NOSTRAND DELI LLC,-7.8,Groceries,Deli/Market
+10/06/2025,Customer Service - Epoch,-0.99,Other,Unknown
+10/05/2025,STERLING DELI AND GROC,-11.44,Groceries,Deli/Market
+10/05/2025,1037 NOSTRAND DELI LLC,-8.32,Groceries,Deli/Market
+10/05/2025,STERLING DELI AND GROC,-11.44,Groceries,Deli/Market
+10/05/2025,DOMINO'S 3554,-25.43,Other,Unknown
+10/05/2025,VESTA  *AT&T PREPAID,-20.25,Bills & Housing,Phone/Internet
+10/05/2025,VESTA  *AT&T PREPAID,-20.25,Bills & Housing,Phone/Internet
+10/05/2025,DOMINO'S 3554,-25.43,Other,Unknown
+10/05/2025,1037 NOSTRAND DELI LLC,-8.32,Groceries,Deli/Market
+10/05/2025,STERLING DELI AND GROC,-6.24,Groceries,Deli/Market
+10/05/2025,STERLING DELI AND GROC,-6.24,Groceries,Deli/Market
+10/04/2025,Customer Service - Epoch,-16.99,Other,Unknown
+10/04/2025,LYFT   *TEMP AUTH HOLD,-29.14,Rideshare - Uber,Rideshare - Uber
+10/04/2025,PayPal Inc.,0.0,Services,PayPal Fees
+10/03/2025,CHICK-FIL-A #04054,-16.01,Dining Out,Fast Food
+10/03/2025,LYFT   *TEMP AUTH HOLD,-50.71,Rideshare - Uber,Rideshare - Uber
+10/03/2025,TST*MAMA PHO - GRAND S,-32.88,Dining Out,Restaurant
+10/03/2025,TST*MAMA PHO - GRAND S,-32.88,Dining Out,Restaurant
+10/03/2025,CHICK-FIL-A #04054,-27.05,Dining Out,Fast Food
+10/03/2025,CHICK-FIL-A #04054,-27.05,Dining Out,Fast Food
+10/03/2025,CITIBIK*1 RIDE,-21.57,Transportation,Transit - Subway/Bus
+10/03/2025,CHICK-FIL-A #04054,-16.01,Dining Out,Fast Food
+10/03/2025,LYFT   *2 RIDES 10-01,-11.2,Rideshare - Uber,Rideshare - Uber
+10/03/2025,LYFT   *TEMP AUTH HOLD,-10.37,Rideshare - Uber,Rideshare - Uber
+10/03/2025,LYFT   *TEMP AUTH HOLD,-11.2,Rideshare - Uber,Rideshare - Uber
+10/02/2025,TST*XIAN FAMOUS FOODS,-19.71,Dining Out,Restaurant
+10/02/2025,LYFT   *TEMP AUTH HOLD,-20.77,Rideshare - Uber,Rideshare - Uber
+10/02/2025,LYFT   *CASH 10-01,-25.0,Rideshare - Uber,Rideshare - Uber
+10/02/2025,CHICK-FIL-A #05572,-18.35,Dining Out,Fast Food
+10/02/2025,TST*XIAN FAMOUS FOODS,-19.71,Dining Out,Restaurant
+10/02/2025,CHICK-FIL-A #05572,-18.35,Dining Out,Fast Food
+10/02/2025,FEDEX OFFICE #1035,-9.85,Shipping,Shipping
+10/02/2025,LYFT   *CASH 10-01,-25.0,Rideshare - Uber,Rideshare - Uber
+10/02/2025,PayPal Inc.,-2.9,Services,PayPal Fees
+10/02/2025,CURB MOBILITY,-40.32,Rideshare - Uber,Rideshare - Uber
+10/02/2025,CURB MOBILITY,-40.32,Rideshare - Uber,Rideshare - Uber
+10/02/2025,FEDEX OFFICE #1035,-41.86,Shipping,Shipping
+10/02/2025,FEDEX OFFICE #1035,-41.86,Shipping,Shipping
+10/02/2025,CHICK-FIL-A #04274,-6.37,Dining Out,Fast Food
+10/02/2025,CHICK-FIL-A #04274,-6.37,Dining Out,Fast Food
+10/02/2025,ROCKET LAWYER,-5.0,Other,Unknown
+10/02/2025,ROCKET LAWYER,-5.0,Other,Unknown
+10/02/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+10/02/2025,CITIBIK*TEMP HOLD,-4.99,Transportation,Transit - Subway/Bus
+10/02/2025,CITIBIK*TEMP HOLD,-4.99,Transportation,Transit - Subway/Bus
+10/02/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+10/02/2025,LYFT   *TEMP AUTH HOLD,-4.99,Rideshare - Uber,Rideshare - Uber
+10/01/2025,HERCULES CORP KIOSK,-20.0,Bills & Housing,Laundry
+10/01/2025,HERCULES CORP KIOSK,-20.0,Bills & Housing,Laundry
+10/01/2025,PayPal Inc.,-15.14,Services,PayPal Fees
+10/01/2025,APPLE STORE #R715,-63.15,Subscriptions,Apple Services
+10/01/2025,PayPal Inc.,-1.29,Services,PayPal Fees
+10/01/2025,1037 NOSTRAND DELI LLC,-9.88,Groceries,Deli/Market
+10/01/2025,1037 NOSTRAND DELI LLC,-2.6,Groceries,Deli/Market
+10/01/2025,1037 NOSTRAND DELI LLC,-9.88,Groceries,Deli/Market
+10/01/2025,1037 NOSTRAND DELI LLC,-2.6,Groceries,Deli/Market
+10/01/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+09/30/2025,T & T Organic Market I,-12.48,Groceries,Supermarket
+09/30/2025,T & T Organic Market I,-12.48,Groceries,Supermarket
+09/30/2025,1037 NOSTRAND DELI LLC,-14.56,Groceries,Deli/Market
+09/30/2025,1037 NOSTRAND DELI LLC,-14.56,Groceries,Deli/Market
+09/30/2025,1037 NOSTRAN-725997,-19.49,Groceries,Deli/Market
+09/30/2025,PayPal Inc.,0.0,Services,PayPal Fees
+09/30/2025,1037 NOSTRAND DELI LLC,-4.68,Groceries,Deli/Market
+09/30/2025,1037 NOSTRAND DELI LLC,-4.68,Groceries,Deli/Market
+09/29/2025,PayPal Inc.,0.0,Services,PayPal Fees
+09/28/2025,PayPal Inc.,0.0,Services,PayPal Fees
+09/28/2025,DD *DOORDASH ARTICHOKE,-42.09,Food Delivery,Delivery
+09/28/2025,DD *DOORDASH ARTICHOKE,-42.09,Food Delivery,Delivery
+09/24/2025,OMNYPYG*,-2.9,Transportation,Transit - Subway/Bus
+09/24/2025,LYFT   *TEMP AUTH HOLD,-29.32,Rideshare - Uber,Rideshare - Uber
+09/24/2025,LYFT   *TEMP AUTH HOLD,-28.03,Rideshare - Uber,Rideshare - Uber
+09/24/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+09/24/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+09/24/2025,OMNYPYG*,-2.9,Transportation,Transit - Subway/Bus
+09/24/2025,PayPal Inc.,0.0,Services,PayPal Fees
+09/23/2025,MTA*NYCT PAYGO RECOVER,-2.9,Transportation,Transit - Subway/Bus
+09/23/2025,"DoorDash, Inc.",-3.13,Food Delivery,Delivery
+09/23/2025,MTA*NYCT PAYGO RECOVER,-2.9,Transportation,Transit - Subway/Bus
+09/23/2025,PayPal Inc.,0.0,Services,PayPal Fees
+09/22/2025,"DoorDash, Inc.",-10.75,Food Delivery,Delivery
+09/22/2025,LEFFERTS HARDWARE INC.,-2.0,Shopping,Electronics
+09/22/2025,LEFFERTS HARDWARE INC.,-2.0,Shopping,Electronics
+09/22/2025,PayPal Inc.,0.0,Services,PayPal Fees
+09/21/2025,STERLING DELI AND GROC,-3.12,Groceries,Deli/Market
+09/21/2025,PayPal Inc.,-18.72,Services,PayPal Fees
+09/21/2025,STERLING DELI AND GROC,-5.2,Groceries,Deli/Market
+09/21/2025,T & T Organic Market I,-5.2,Groceries,Supermarket
+09/21/2025,T & T Organic Market I,-5.2,Groceries,Supermarket
+09/21/2025,STERLING DELI AND GROC,-3.12,Groceries,Deli/Market
+09/21/2025,STERLING DELI AND GROC,-5.2,Groceries,Deli/Market
+09/20/2025,OPENAI *CHATGPT SUBSCR,-21.2,Other,Unknown
+09/20/2025,ALLIANZ INSURANCE,-22.0,Bills & Housing,Insurance
+09/20/2025,PayPal Inc.,-55.0,Services,PayPal Fees
+09/20/2025,Nyx*877-494-3833 EVGO,-64.5,Other,Unknown
+09/20/2025,PayPal Inc.,0.0,Services,PayPal Fees
+09/19/2025,JOULEZ-EV CAR RENTALS,-253.72,Car Rental,Car Rental
+09/19/2025,JOULEZ-EV CAR RENTALS,-253.72,Car Rental,Car Rental
+09/19/2025,JOULEZ-EV CAR RENTALS,-52.88,Car Rental,Car Rental
+09/19/2025,JOULEZ-EV CAR RENTALS,-52.88,Car Rental,Car Rental
+09/19/2025,PayPal Inc.,-58.4,Services,PayPal Fees
+09/19/2025,NUTHOUSE HARDWARE,-28.29,Shopping,Electronics
+09/19/2025,PayPal Inc.,0.0,Services,PayPal Fees
+09/19/2025,NUTHOUSE HARDWARE,-28.29,Shopping,Electronics
+09/18/2025,Duane Reade STO,-49.34,Health,Pharmacy
+09/18/2025,JOULEZ-EV CAR RENTALS,-216.66,Car Rental,Car Rental
+09/18/2025,JOULEZ-EV CAR RENTALS,-216.66,Car Rental,Car Rental
+09/18/2025,PayPal Inc.,-24.68,Services,PayPal Fees
+09/18/2025,7-ELEVEN,-21.18,Groceries,Convenience Store
+09/18/2025,TARGET T-1865,-20.83,Groceries,Supermarket
+09/18/2025,NST BEST BUY #474  001986,-11.15,Other,Unknown
+09/18/2025,PayPal Inc.,0.0,Services,PayPal Fees
+09/16/2025,WWW.PAYWITHFOUR.COM,-29.71,Services,PayPal Fees
+09/16/2025,PayPal Inc.,-29.93,Services,PayPal Fees
+09/15/2025,SPACE MARKET,-14.68,Groceries,Supermarket
+09/15/2025,SPACE MARKET,-14.68,Groceries,Supermarket
+09/14/2025,PayPal Inc.,-0.47,Services,PayPal Fees
+09/13/2025,CHICK-FIL-A #04274,-21.71,Dining Out,Fast Food
+09/13/2025,ALLIANZ INSURANCE,-22.0,Bills & Housing,Insurance
+09/13/2025,CHICK-FIL-A #04274,-21.71,Dining Out,Fast Food
+09/13/2025,T & T Organic Market I,-19.24,Groceries,Supermarket
+09/13/2025,T & T Organic Market I,-19.24,Groceries,Supermarket
+09/13/2025,PayPal Inc.,-12.78,Services,PayPal Fees
+09/13/2025,LYFT   *TEMP AUTH HOLD,-71.18,Rideshare - Uber,Rideshare - Uber
+09/13/2025,PayPal Inc.,-138.8,Services,PayPal Fees
+09/13/2025,BURGER KING #21283,-12.62,Dining Out,Fast Food
+09/13/2025,BURGER KING #21283,-12.62,Dining Out,Fast Food
+09/13/2025,STEINWAY GOURMET DELI,-3.12,Groceries,Deli/Market
+09/13/2025,STEINWAY GOURMET DELI,-3.12,Groceries,Deli/Market
+09/13/2025,OMNYPYG*,-2.9,Transportation,Transit - Subway/Bus
+09/13/2025,OMNYPYG*,-2.9,Transportation,Transit - Subway/Bus
+09/12/2025,PayPal Inc.,-24.98,Services,PayPal Fees
+09/12/2025,TST*THE PIZZA INN - WA,-15.81,Dining Out,Restaurant
+09/12/2025,TST*THE PIZZA INN - WA,-15.81,Dining Out,Restaurant
+09/12/2025,SNIPES 73,-100.05,Shopping,Clothing
+09/12/2025,SNIPES 73,-100.05,Shopping,Clothing
+09/12/2025,LYFT   *TEMP AUTH HOLD,-49.66,Rideshare - Uber,Rideshare - Uber
+09/12/2025,STARBUCKS 8007827282,-15.0,Other,Unknown
+09/12/2025,STARBUCKS 8007827282,-15.0,Other,Unknown
+09/12/2025,TST*THE PIZZA INN - WA,-9.69,Dining Out,Restaurant
+09/12/2025,TST*THE PIZZA INN - WA,-9.69,Dining Out,Restaurant
+09/11/2025,BEST BUY MOBILE #2518,-27.2,Transportation,Gas Station
+09/11/2025,DD *DOORDASH WINGSTOP,-32.31,Food Delivery,Delivery
+09/11/2025,DD *DOORDASH WINGSTOP,-32.31,Food Delivery,Delivery
+09/11/2025,BEST BUY MOBILE #2518,-38.73,Transportation,Gas Station
+09/11/2025,STERLING DELI AND GROC,-6.24,Groceries,Deli/Market
+09/11/2025,STERLING DELI AND GROC,-6.24,Groceries,Deli/Market
+09/11/2025,PayPal Inc.,0.0,Services,PayPal Fees
+09/10/2025,DD *DOORDASH XIANFAMOU,-27.0,Food Delivery,Delivery
+09/10/2025,DD *DOORDASH XIANFAMOU,-27.0,Food Delivery,Delivery
+09/10/2025,PayPal Inc.,0.0,Services,PayPal Fees
+09/09/2025,DD *DOORDASH BUFFALOWI,-30.14,Food Delivery,Delivery
+09/09/2025,DD *DOORDASH BUFFALOWI,-30.14,Food Delivery,Delivery
+09/09/2025,T & T Organic Market I,-6.62,Groceries,Supermarket
+09/09/2025,T & T Organic Market I,-6.62,Groceries,Supermarket
+09/09/2025,PayPal Inc.,0.0,Services,PayPal Fees
+09/09/2025,T & T Organic Market I,-1.7,Groceries,Supermarket
+09/09/2025,T & T Organic Market I,-1.7,Groceries,Supermarket
+09/08/2025,FEDEX OFFICE #267,-4.53,Shipping,Shipping
+09/08/2025,HEALTHY ORGANIC FOODS,-2.2,Other,Unknown
+09/08/2025,HEALTHY ORGANIC FOODS,-2.2,Other,Unknown
+09/07/2025,BURGER KING #2784  Q07,-10.54,Dining Out,Fast Food
+09/07/2025,BURGER KING #2784  Q07,-10.54,Dining Out,Fast Food
+09/07/2025,2ND AVE SMOKE SHOP,-21.78,Tobacco/Vape,Tobacco/Vape
+09/07/2025,CHICK-FIL-A #03993,-10.67,Dining Out,Fast Food
+09/07/2025,CHICK-FIL-A #03993,-10.67,Dining Out,Fast Food
+09/07/2025,2ND AVE SMOKE SHOP,-21.78,Tobacco/Vape,Tobacco/Vape
+09/07/2025,SUNOCO 0368305901,-30.0,Transportation,Gas Station
+09/07/2025,SUNOCO 0368305901,-30.0,Transportation,Gas Station
+09/07/2025,WALGREENS 210 UNION AV,-36.56,Health,Pharmacy
+09/07/2025,PayPal Inc.,-1.25,Services,PayPal Fees
+09/06/2025,TST*MAMA PHO - GRAND S,-22.85,Dining Out,Restaurant
+09/06/2025,HERCULES CORP KIOSK,-10.0,Bills & Housing,Laundry
+09/06/2025,7-ELEVEN,-21.34,Groceries,Convenience Store
+09/06/2025,97565 - ROBERT WOO,-12.0,Other,Unknown
+09/06/2025,97565 - ROBERT WOO,-12.0,Other,Unknown
+09/06/2025,TST*MAMA PHO - GRAND S,-22.85,Dining Out,Restaurant
+09/06/2025,IHG POINTS AND CASH MO,-89.0,Travel,Hotels
+09/06/2025,HERCULES CORP KIOSK,-10.0,Bills & Housing,Laundry
+09/06/2025,IHG POINTS AND CASH MO,-89.0,Travel,Hotels
+09/06/2025,HERCULES CORP MOBILE,-10.0,Transportation,Gas Station
+09/06/2025,HERCULES CORP MOBILE,-10.0,Transportation,Gas Station
+09/06/2025,STERLING DELI AND GROC,-6.24,Groceries,Deli/Market
+09/06/2025,TST*MAMA PHO - GRAND S,-2.72,Dining Out,Restaurant
+09/06/2025,TST*MAMA PHO - GRAND S,-2.72,Dining Out,Restaurant
+09/06/2025,STERLING DELI AND GROC,-3.12,Groceries,Deli/Market
+09/06/2025,STERLING DELI AND GROC,-3.12,Groceries,Deli/Market
+09/06/2025,STERLING DELI AND GROC,-6.24,Groceries,Deli/Market
+09/05/2025,DM 561,-8.49,Groceries,Deli/Market
+09/05/2025,DM 561,-8.49,Groceries,Deli/Market
+09/05/2025,SPEEDWAY  13415 CROSSB,-31.69,Transportation,Gas Station
+09/05/2025,CHICK-FIL-A #04148,-12.53,Dining Out,Fast Food
+09/05/2025,CHICK-FIL-A #04148,-12.53,Dining Out,Fast Food
+09/05/2025,PayPal Inc.,-30.0,Services,PayPal Fees
+09/05/2025,CASH APP*DOORDASH,-38.22,Food Delivery,Delivery
+09/05/2025,CASH APP*DOORDASH,-38.22,Food Delivery,Delivery
+09/05/2025,CROWNE PLAZA EDISON,-101.0,Travel,Hotels
+09/05/2025,PayPal Inc.,-2.91,Services,PayPal Fees
+09/05/2025,JC DELI & GRILL,-3.11,Groceries,Deli/Market
+09/05/2025,PayPal Inc.,0.0,Services,PayPal Fees
+09/05/2025,JC DELI & GRILL,-3.11,Groceries,Deli/Market
+09/05/2025,109 SPICY GOURMET DELI,-1.69,Groceries,Deli/Market
+09/05/2025,109 SPICY GOURMET DELI,-1.69,Groceries,Deli/Market
+09/05/2025,STERLING DELI AND GROC,-2.6,Groceries,Deli/Market
+09/05/2025,STERLING DELI AND GROC,-2.6,Groceries,Deli/Market
+09/04/2025,NORDRACKCOM8889666283,-34.97,Other,Unknown
+09/04/2025,NORDRACKCOM8889666283,-34.97,Other,Unknown
+09/04/2025,7-ELEVEN,-6.75,Groceries,Convenience Store
+09/03/2025,WALGREENS 905 NEW DURH,-27.7,Health,Pharmacy
+09/03/2025,BURGER KING #114,-12.57,Dining Out,Fast Food
+09/03/2025,APPLE.COM/BILL,-9.03,Subscriptions,Apple Services
+09/03/2025,APPLE.COM/BILL,-10.62,Subscriptions,Apple Services
+09/03/2025,APPLE.COM/BILL,-10.62,Subscriptions,Apple Services
+09/03/2025,APPLE.COM/BILL,-9.99,Subscriptions,Apple Services
+09/03/2025,APPLE.COM/BILL,-9.99,Subscriptions,Apple Services
+09/03/2025,APPLE.COM/BILL,-28.7,Subscriptions,Apple Services
+09/03/2025,APPLE.COM/BILL,-9.03,Subscriptions,Apple Services
+09/03/2025,APPLE.COM/BILL,-28.7,Subscriptions,Apple Services
+09/03/2025,WAWA 8406,-40.0,Groceries,Convenience Store
+09/03/2025,EXXON KINGS FLATBUSH E,-30.0,Transportation,Gas Station
+09/03/2025,USPS PO 3 1062 LIVINGS,-102.55,Shipping,Shipping
+09/03/2025,USPS PO 3 2101 STATE R,-205.1,Shipping,Shipping
+09/03/2025,EXXON KINGS FLATBUSH E,-30.0,Transportation,Gas Station
+09/03/2025,WAWA 8406,-4.25,Groceries,Convenience Store
+09/03/2025,WAWA 8406,-40.0,Groceries,Convenience Store
+09/03/2025,7-ELEVEN,-6.18,Groceries,Convenience Store
+09/03/2025,BURGER KING #114,-12.57,Dining Out,Fast Food
+09/03/2025,WAWA 8406,-4.25,Groceries,Convenience Store
+09/03/2025,EXXON KINGS FLATBUSH E,-3.09,Transportation,Gas Station
+09/03/2025,USPS PO 3 2101 STATE R,,Shipping,Shipping
+09/03/2025,McDonalds 11616,-1.84,Dining Out,Fast Food
+09/03/2025,CHICK-FIL-A #03993,-2.66,Dining Out,Fast Food
+09/03/2025,CHICK-FIL-A #03993,-2.66,Dining Out,Fast Food
+09/03/2025,APPLE.COM/BILL,-2.12,Subscriptions,Apple Services
+09/03/2025,APPLE.COM/BILL,-2.12,Subscriptions,Apple Services
+09/03/2025,USPS PO 3 2101 STATE R,-1.98,Shipping,Shipping
+09/03/2025,EXXON KINGS FLATBUSH E,-3.09,Transportation,Gas Station
+09/03/2025,McDonalds 11616,-1.84,Dining Out,Fast Food
+09/03/2025,USPS PO 3 2101 STATE R,-1.01,Shipping,Shipping
+09/02/2025,BOUND BROOK CONVENIENC,-15.98,Groceries,Deli/Market
+09/02/2025,US MOBILE,-25.0,Transportation,Gas Station
+09/02/2025,BOUND BROOK CONVENIENC,-15.98,Groceries,Deli/Market
+09/02/2025,UN GOURMET DELI,-14.29,Groceries,Deli/Market
+09/02/2025,UN GOURMET DELI,-14.29,Groceries,Deli/Market
+09/02/2025,RESIDENCE INN SOMERS,-201.28,Travel,Hotels
+09/02/2025,WALGREENS 905 NEW DURH,-59.77,Health,Pharmacy
+09/02/2025,SUNOCO 0368301801,-7.98,Transportation,Gas Station
+09/02/2025,MCDONALD'S F23375,-2.12,Dining Out,Fast Food
+09/02/2025,SUNOCO 0368301801,-7.98,Transportation,Gas Station
+09/02/2025,Nyx*Canteen Melville,-3.6,Groceries,Convenience Store
+09/02/2025,Nyx*Canteen Melville,-3.6,Groceries,Convenience Store
+09/02/2025,MCDONALD'S F23375,-2.12,Dining Out,Fast Food
+09/01/2025,WAWA 8317,-9.47,Groceries,Convenience Store
+09/01/2025,WAWA 8317,-9.47,Groceries,Convenience Store
+09/01/2025,TARGET T- 200 Promenad,-10.77,Groceries,Supermarket
+09/01/2025,"DoorDash, Inc.",-28.61,Food Delivery,Delivery
+08/31/2025,QUICK CHEK #018,-30.0,Groceries,Convenience Store
+08/31/2025,QUICK CHEK #018,-10.09,Groceries,Convenience Store
+08/30/2025,PRET A MANGER US0030,-14.64,Other,Unknown
+08/30/2025,THE DRAPER FOOD AND BE,-11.56,Dining Out,Restaurant
+08/30/2025,THE DRAPER FOOD AND BE,-11.56,Dining Out,Restaurant
+08/30/2025,AG TRAVEL PLAZA 340080,-12.48,Other,Unknown
+08/30/2025,AG TRAVEL PLAZA 340080,-12.48,Other,Unknown
+08/30/2025,PRET A MANGER US0030,-14.64,Other,Unknown
+08/30/2025,PANDA EXPRESS #1840,-24.31,Dining Out,Fast Food
+08/30/2025,PANDA EXPRESS #1840,-24.31,Dining Out,Fast Food
+08/30/2025,THE DRAPER,-117.11,Dining Out,Restaurant
+08/30/2025,THE DRAPER,-117.11,Dining Out,Restaurant
+08/30/2025,Thomas Onuska,-20.0,Other,Unknown
+08/30/2025,NY GRILL & DELI,-4.68,Groceries,Deli/Market
+08/30/2025,QUICK CHEK FOOD,-8.27,Groceries,Convenience Store
+08/30/2025,NY GRILL & DELI,-4.68,Groceries,Deli/Market
+08/30/2025,PayPal Inc.,0.0,Services,PayPal Fees
+08/30/2025,STARBUCKS 57892 340080,-4.23,Other,Unknown
+08/30/2025,STARBUCKS 57892 340080,-4.23,Other,Unknown
+08/29/2025,TST*YIA YIAS- HOMEMADE,-22.79,Dining Out,Restaurant
+08/29/2025,HELLS KITCHEN DELI,-19.77,Groceries,Deli/Market
+08/29/2025,BP#6634802LAHOR,-40.61,Transportation,Gas Station
+08/29/2025,TST*YIA YIAS- HOMEMADE,-22.79,Dining Out,Restaurant
+08/29/2025,SMOKE N VAPE CORP,-40.52,Tobacco/Vape,Tobacco/Vape
+08/29/2025,SMOKE N VAPE CORP,-40.52,Tobacco/Vape,Tobacco/Vape
+08/29/2025,T J MAXX #1185,-50.03,Other,Unknown
+08/29/2025,T J MAXX #1185,-50.03,Other,Unknown
+08/29/2025,CIGAR SMOKE -746478,-105.49,Tobacco/Vape,Tobacco/Vape
+08/29/2025,DD *DOORDASHDASHPASS,-9.99,Food Delivery,Delivery
+08/29/2025,TST* XI'AN FAMOUS FOOD,-9.2,Dining Out,Restaurant
+08/29/2025,PayPal Inc.,0.0,Services,PayPal Fees
+08/29/2025,TST* XI'AN FAMOUS FOOD,-9.2,Dining Out,Restaurant
+08/29/2025,HELLS KITCHEN DELI,-6.22,Groceries,Deli/Market
+08/29/2025,Daystay LLC,-6.5,Other,Unknown
+08/28/2025,BOUND BROOK CONVENIENC,-19.18,Groceries,Deli/Market
+08/28/2025,WESTSIDE MARKET 2840,-23.16,Groceries,Supermarket
+08/28/2025,BOUND BROOK CONVENIENC,-19.18,Groceries,Deli/Market
+08/27/2025,CHICK-FIL-A #03429,-19.53,Dining Out,Fast Food
+08/27/2025,FEDEX OFFICE #998,-14.92,Shipping,Shipping
+08/27/2025,FEDEX OFFICE #998,-14.92,Shipping,Shipping
+08/27/2025,KOHL'S #0387,-98.02,Shopping,Clothing
+08/27/2025,NORDSTROM RACK #651,-37.96,Shopping,Clothing
+08/27/2025,PANDA EXPRESS #1840,-25.0,Dining Out,Fast Food
+08/27/2025,PANDA EXPRESS #1840,-25.0,Dining Out,Fast Food
+08/27/2025,NORDSTROM RACK #651,-37.96,Shopping,Clothing
+08/27/2025,KOHL'S #0387,-98.02,Shopping,Clothing
+08/27/2025,DUNKIN #330094 Q35,-4.57,Other,Unknown
+08/27/2025,"GoDaddy.com, LLC",-9.79,Subscriptions,Software
+08/27/2025,CHICK-FIL-A #03429,-19.53,Dining Out,Fast Food
+08/27/2025,DUNKIN #330094 Q35,-4.57,Other,Unknown
+08/27/2025,7-ELEVEN,-2.99,Groceries,Convenience Store
+08/27/2025,PETRO EXPRESS,-2.12,Other,Unknown
+08/27/2025,PETRO EXPRESS,-2.12,Other,Unknown
+08/26/2025,ULTA #1266,-78.46,Shopping,Clothing
+08/26/2025,PHILLIPS 66 - PETRO,-40.0,Other,Unknown
+08/26/2025,WALGREENS 833 ROOSEVEL,-29.16,Health,Pharmacy
+08/26/2025,WALGREENS 476 W UNION,-40.38,Health,Pharmacy
+08/26/2025,TARGET T- 200 Promenad,-13.18,Groceries,Supermarket
+08/26/2025,PayPal Inc.,-0.03,Services,PayPal Fees
+08/25/2025,T J MAXX #1386,-175.23,Other,Unknown
+08/25/2025,PayPal Inc.,-36.62,Services,PayPal Fees
+08/25/2025,PayPal Inc.,-0.15,Services,PayPal Fees
+08/25/2025,PayPal Inc.,0.0,Services,PayPal Fees
+08/25/2025,PayPal Inc.,-0.03,Services,PayPal Fees
+08/24/2025,OPTIMUM 7836 P,-25.0,Other,Unknown
+08/24/2025,HERCULES CORP KIOSK,-10.0,Bills & Housing,Laundry
+08/24/2025,HERCULES CORP KIOSK,-10.0,Bills & Housing,Laundry
+08/24/2025,OPTIMUM 7836 P,-25.0,Other,Unknown
+08/24/2025,OPTIMUM.COM/MOBILE,-70.76,Transportation,Gas Station
+08/24/2025,OPTIMUM.COM/MOBILE,-70.76,Transportation,Gas Station
+08/24/2025,WILLIAMSBURG ORGANIC D,-1.3,Groceries,Supermarket
+08/24/2025,WILLIAMSBURG ORGANIC D,-1.3,Groceries,Supermarket
+08/24/2025,PayPal Inc.,0.0,Services,PayPal Fees
+08/23/2025,"DoorDash, Inc.",-15.55,Food Delivery,Delivery
+08/23/2025,"GB License, LLC",-19.97,Bills & Housing,Insurance
+08/23/2025,GoBrands Inc.,-8.7,Other,Unknown
+08/22/2025,"GB License, LLC",-38.79,Bills & Housing,Insurance
+08/22/2025,"GB License, LLC",-18.49,Bills & Housing,Insurance
+08/22/2025,CURB MOBILITY,-52.19,Rideshare - Uber,Rideshare - Uber
+08/22/2025,CURB MOBILITY,-52.19,Rideshare - Uber,Rideshare - Uber
+08/22/2025,TRELLIS* TRIAL OVER,-69.95,Subscriptions,Software
+08/22/2025,PayPal Inc.,-187.16,Services,PayPal Fees
+08/22/2025,Patreon* Membership,-11.99,Subscriptions,Apple Services
+08/22/2025,Patreon* Membership,-11.99,Subscriptions,Apple Services
+08/22/2025,HAMPTON INN TIMES SQUA,-4.0,Other,Unknown
+08/22/2025,"GB License, LLC",-3.0,Bills & Housing,Insurance
+08/22/2025,HAMPTON INN TIMES SQUA,-4.0,Other,Unknown
+08/21/2025,Nayax **Divine Snacks,-2.5,Groceries,Convenience Store
+08/21/2025,TARGET ST 615 10TH AVE,-93.3,Groceries,Supermarket
+08/21/2025,Nayax **Divine Snacks,-2.5,Groceries,Convenience Store
+08/21/2025,Nayax **Divine Snacks,-2.0,Groceries,Convenience Store
+08/21/2025,Nayax **Divine Snacks,-2.0,Groceries,Convenience Store
+08/20/2025,Grand Gourmet Deli NY,-2.6,Groceries,Deli/Market
+08/20/2025,Grand Gourmet Deli NY,-2.6,Groceries,Deli/Market
+08/19/2025,LYFT   *TEMP AUTH HOLD,-44.27,Rideshare - Uber,Rideshare - Uber
+08/19/2025,METRO BEER & SMOKE,-26.79,Tobacco/Vape,Tobacco/Vape
+08/19/2025,METRO BEER & SMOKE,-26.79,Tobacco/Vape,Tobacco/Vape
+08/19/2025,LYFT   *TEMP AUTH HOLD,-13.81,Rideshare - Uber,Rideshare - Uber
+08/19/2025,LYFT   *TEMP AUTH HOLD,-13.81,Rideshare - Uber,Rideshare - Uber
+08/19/2025,PayPal Inc.,-7.65,Services,PayPal Fees
+08/19/2025,MTA*NYCT PAYGO,-2.9,Transportation,Transit - Subway/Bus
+08/19/2025,STERLING DELI AND GROC,-2.08,Groceries,Deli/Market
+08/19/2025,Grand Gourmet Deli NY,-2.6,Groceries,Deli/Market
+08/19/2025,Grand Gourmet Deli NY,-2.6,Groceries,Deli/Market
+08/19/2025,STERLING DELI AND GROC,-2.08,Groceries,Deli/Market
+08/18/2025,LYFT   *TEMP AUTH HOLD,-27.08,Rideshare - Uber,Rideshare - Uber
+08/18/2025,PayPal Inc.,-12.58,Services,PayPal Fees
+08/18/2025,LYFT   *TEMP AUTH HOLD,-20.49,Rideshare - Uber,Rideshare - Uber
+08/18/2025,DD *DOORDASH ROMETOBRO,-35.28,Food Delivery,Delivery
+08/18/2025,DD *DOORDASH ROMETOBRO,-35.28,Food Delivery,Delivery
+08/18/2025,JC DELI & GRILL,-6.22,Groceries,Deli/Market
+08/18/2025,JC DELI & GRILL,-6.22,Groceries,Deli/Market
+08/18/2025,LYFT   *RIDE FRI 10AM,-2.02,Rideshare - Uber,Rideshare - Uber
+08/18/2025,LYFT   *TEMP AUTH HOLD,-2.02,Rideshare - Uber,Rideshare - Uber
+08/17/2025,UBR* PENDING.UBER.COM,-26.06,Rideshare - Uber,Rideshare - Uber
+08/17/2025,"DoorDash, Inc.",-16.42,Food Delivery,Delivery
+08/17/2025,UBR* PENDING.UBER.COM,-24.12,Rideshare - Uber,Rideshare - Uber
+08/17/2025,UBR* PENDING.UBER.COM,-24.12,Rideshare - Uber,Rideshare - Uber
+08/17/2025,UBR* PENDING.UBER.COM,-26.06,Rideshare - Uber,Rideshare - Uber
+08/17/2025,NYC TAXI 1246,-45.85,Rideshare - Uber,Rideshare - Uber
+08/17/2025,NYC TAXI 1246,-45.85,Rideshare - Uber,Rideshare - Uber
+08/16/2025,UBER   *TRIP,-23.0,Rideshare - Uber,Rideshare - Uber
+08/16/2025,UBR* PENDING.UBER.COM,-22.96,Rideshare - Uber,Rideshare - Uber
+08/16/2025,PANERA BREAD #609331,-6.88,Dining Out,Fast Food
+08/16/2025,PANERA BREAD #609331,-6.88,Dining Out,Fast Food
+08/16/2025,PANERA BREAD #609331,-5.79,Dining Out,Fast Food
+08/16/2025,UBER   *TRIP,-23.83,Rideshare - Uber,Rideshare - Uber
+08/16/2025,UBER   *TRIP,-23.83,Rideshare - Uber,Rideshare - Uber
+08/16/2025,UBR* PENDING.UBER.COM,-23.92,Rideshare - Uber,Rideshare - Uber
+08/16/2025,TST*MAMA PHO - GRAND S,-25.28,Dining Out,Restaurant
+08/16/2025,TST*MAMA PHO - GRAND S,-25.28,Dining Out,Restaurant
+08/16/2025,CURB MOBILITY,-33.35,Rideshare - Uber,Rideshare - Uber
+08/16/2025,UBER   *TRIP,-33.9,Rideshare - Uber,Rideshare - Uber
+08/16/2025,UBER   *TRIP,-33.9,Rideshare - Uber,Rideshare - Uber
+08/16/2025,NYC PIZZERIA,-4.53,Other,Unknown
+08/16/2025,PANERA BREAD #609331,-5.79,Dining Out,Fast Food
+08/16/2025,CURB MOBILITY,-33.35,Rideshare - Uber,Rideshare - Uber
+08/16/2025,NYC PIZZERIA,-4.53,Other,Unknown
+08/16/2025,TST*MAMA PHO - GRAND S,-3.52,Dining Out,Restaurant
+08/16/2025,Grand Gourmet Deli NY,-2.6,Groceries,Deli/Market
+08/16/2025,TST*MAMA PHO - GRAND S,-3.52,Dining Out,Restaurant
+08/16/2025,Nyx*Five Star Food Ser,-2.75,Other,Unknown
+08/16/2025,Nyx*Five Star Food Ser,-2.75,Other,Unknown
+08/16/2025,Grand Gourmet Deli NY,-2.6,Groceries,Deli/Market
+08/15/2025,UBR* PENDING.UBER.COM,-55.07,Rideshare - Uber,Rideshare - Uber
+08/15/2025,UBER   *TRIP,-55.07,Rideshare - Uber,Rideshare - Uber
+08/15/2025,UBER   *TRIP,-59.61,Rideshare - Uber,Rideshare - Uber
+08/15/2025,PayPal Inc.,-2.75,Services,PayPal Fees
+08/15/2025,Nayax **Franchard Nels,-1.75,Groceries,Convenience Store
+08/15/2025,Nayax **Franchard Nels,-1.75,Groceries,Convenience Store
+08/14/2025,CURB MOBILITY,-148.61,Rideshare - Uber,Rideshare - Uber
+08/14/2025,7-ELEVEN,-2.99,Groceries,Convenience Store
+08/14/2025,CURB MOBILITY,-148.61,Rideshare - Uber,Rideshare - Uber
+08/14/2025,Apple Services,-21.26,Subscriptions,Apple Services
+08/14/2025,Apple Services,-14.12,Subscriptions,Apple Services
+08/14/2025,Apple Services,-6.37,Subscriptions,Apple Services
+08/14/2025,603 GOURMET DELI CORP,-4.15,Groceries,Deli/Market
+08/14/2025,603 GOURMET DELI CORP,-4.15,Groceries,Deli/Market
+08/14/2025,Apple Services,-2.12,Subscriptions,Apple Services
+08/13/2025,VESTA  *AT&T PREPAID,-31.58,Bills & Housing,Phone/Internet
+08/13/2025,MCDONALD'S F27377,-3.62,Dining Out,Fast Food
+08/13/2025,MCDONALD'S F27377,-3.62,Dining Out,Fast Food
+08/12/2025,UBR* PENDING.UBER.COM,-36.97,Rideshare - Uber,Rideshare - Uber
+08/12/2025,UBER   *TRIP,-36.95,Rideshare - Uber,Rideshare - Uber
+08/12/2025,Apple Services,-2.12,Subscriptions,Apple Services
+08/12/2025,UBER   *TRIP,-36.95,Rideshare - Uber,Rideshare - Uber
+08/11/2025,UBR* PENDING.UBER.COM,-21.93,Rideshare - Uber,Rideshare - Uber
+08/11/2025,ALYAMANI GROCERY,-11.44,Groceries,Supermarket
+08/11/2025,DM 561,-12.46,Groceries,Deli/Market
+08/11/2025,DM 561,-12.46,Groceries,Deli/Market
+08/11/2025,UBER   *TRIP,-21.92,Rideshare - Uber,Rideshare - Uber
+08/11/2025,UBR* PENDING.UBER.COM,-21.96,Rideshare - Uber,Rideshare - Uber
+08/11/2025,UBR* PENDING.UBER.COM,-21.96,Rideshare - Uber,Rideshare - Uber
+08/11/2025,SQ *HENA350INC,-3.5,Dining Out,Restaurant
+08/11/2025,EL PUTNAM GROCERY,-2.6,Groceries,Supermarket
+08/11/2025,EL PUTNAM GROCERY,-2.6,Groceries,Supermarket
+08/10/2025,UBR* PENDING.UBER.COM,-20.93,Rideshare - Uber,Rideshare - Uber
+08/10/2025,MCDONALD'S F23533,-12.4,Dining Out,Fast Food
+08/10/2025,MCDONALD'S F23533,-12.4,Dining Out,Fast Food
+08/10/2025,TST*MAMA PHO - GRAND S,-17.69,Dining Out,Restaurant
+08/10/2025,TST*MAMA PHO - GRAND S,-17.69,Dining Out,Restaurant
+08/10/2025,UBR* PENDING.UBER.COM,-20.93,Rideshare - Uber,Rideshare - Uber
+08/10/2025,TST*MAMA PHO - GRAND S,-26.08,Dining Out,Restaurant
+08/10/2025,TST*MAMA PHO - GRAND S,-26.08,Dining Out,Restaurant
+08/10/2025,"NOTION LABS, INC.",-12.0,Other,Unknown
+08/10/2025,"NOTION LABS, INC.",-12.0,Other,Unknown
+08/10/2025,DD *DOORDASH ARTICHOKE,-11.56,Food Delivery,Delivery
+08/10/2025,DD *DOORDASH ARTICHOKE,-11.56,Food Delivery,Delivery
+08/10/2025,Grand Gourmet Deli NY,-2.6,Groceries,Deli/Market
+08/09/2025,DD *DOORDASH XIANFAMOU,-19.11,Food Delivery,Delivery
+08/09/2025,"NOTION LABS, INC.",-12.0,Other,Unknown
+08/09/2025,"DoorDash, Inc.",-17.46,Food Delivery,Delivery
+08/09/2025,DD *DOORDASH XIANFAMOU,-19.11,Food Delivery,Delivery
+08/09/2025,AT&T 7875 7875,-5.0,Bills & Housing,Phone/Internet
+08/09/2025,AT&T 7875 7875,-5.0,Bills & Housing,Phone/Internet
+08/09/2025,GREEN PARK GOURMET DEL,-2.6,Other,Unknown
+08/09/2025,GREEN PARK GOURMET DEL,-2.6,Other,Unknown
+08/08/2025,MCDONALD'S F3375,-5.91,Dining Out,Fast Food
+08/08/2025,MCDONALD'S F3375,-5.91,Dining Out,Fast Food
+08/08/2025,Apple Services,-10.62,Subscriptions,Apple Services
+08/08/2025,SHELL,-15.0,Transportation,Gas Station
+08/08/2025,SHELL,-15.0,Transportation,Gas Station
+08/08/2025,JC DELI & GRILL,-3.11,Groceries,Deli/Market
+08/08/2025,TST*MAMA PHO - GRAND S,-2.72,Dining Out,Restaurant
+08/08/2025,JC DELI & GRILL,-3.11,Groceries,Deli/Market
+08/08/2025,TST*MAMA PHO - GRAND S,-2.72,Dining Out,Restaurant
+08/07/2025,MCDONALD'S F27377,-4.88,Dining Out,Fast Food
+08/07/2025,MCDONALD'S F27377,-4.88,Dining Out,Fast Food
+08/07/2025,SEPHORA BROOKLYN,-34.84,Dining Out,Restaurant
+08/07/2025,CHICK-FIL-A #04881,-13.27,Dining Out,Fast Food
+08/07/2025,CHICK-FIL-A #04881,-13.27,Dining Out,Fast Food
+08/07/2025,SQ *HENA350INC,-8.0,Dining Out,Restaurant
+08/06/2025,DM 561,-3.12,Groceries,Deli/Market
+08/06/2025,RAINBOW STATION,-9.99,Other,Unknown
+08/06/2025,RAINBOW STATION,-9.99,Other,Unknown
+08/06/2025,DM 561,-3.12,Groceries,Deli/Market
+08/06/2025,CHICK-FIL-A #05646,-14.86,Dining Out,Fast Food
+08/06/2025,CHICK-FIL-A #05646,-14.86,Dining Out,Fast Food
+08/06/2025,JC DELI & GRILL,-3.11,Groceries,Deli/Market
+08/06/2025,JC DELI & GRILL,-3.11,Groceries,Deli/Market
+08/05/2025,MCDONALD'S F3375,-13.05,Dining Out,Fast Food
+08/05/2025,MCDONALD'S F3375,-13.05,Dining Out,Fast Food
+08/05/2025,VESTA  *AT&T PREPAID,-16.27,Bills & Housing,Phone/Internet
+08/05/2025,JC DELI AND -355314,-19.39,Groceries,Deli/Market
+08/05/2025,US MOBILE,-25.0,Transportation,Gas Station
+08/05/2025,108 COLUMBIA SMOKE SHO,-25.99,Tobacco/Vape,Tobacco/Vape
+08/05/2025,108 COLUMBIA SMOKE SHO,-25.99,Tobacco/Vape,Tobacco/Vape
+08/05/2025,EXXON 315 W. 96 SERVIC,-30.0,Transportation,Gas Station
+08/05/2025,EXXON 315 W. 96 SERVIC,-30.0,Transportation,Gas Station
+08/05/2025,DM 561,-3.95,Groceries,Deli/Market
+08/05/2025,DM 561,-3.95,Groceries,Deli/Market
+08/04/2025,Queensboro Car Wash,-23.94,Services,Car Wash
+08/04/2025,JC DELI & GRILL,-6.22,Groceries,Deli/Market
+08/04/2025,CHICK-FIL-A #04141,-11.54,Dining Out,Fast Food
+08/04/2025,CHICK-FIL-A #04141,-11.54,Dining Out,Fast Food
+08/04/2025,JC DELI & GRILL,-6.22,Groceries,Deli/Market
+08/04/2025,Queensboro Car Wash,-23.94,Services,Car Wash
+08/04/2025,PADDLE.NET* IMAZING,-29.99,Other,Unknown
+08/04/2025,Nike US Stores,-55.0,Shopping,Clothing
+08/04/2025,Nike US Stores,-55.0,Shopping,Clothing
+08/04/2025,Hilton Brooklyn,-283.99,Travel,Hotels
+08/04/2025,Hilton Brooklyn,-283.99,Travel,Hotels
+08/04/2025,SQ *DIVINE SNACKS,-4.5,Dining Out,Restaurant
+08/04/2025,Queensboro Car Wash,-3.71,Services,Car Wash
+08/04/2025,WALGREENS 210 UNION AV,-1.98,Health,Pharmacy
+08/04/2025,STOP II ORGANIC & GROC,-2.29,Other,Unknown
+08/04/2025,STOP II ORGANIC & GROC,-2.29,Other,Unknown
+08/04/2025,Queensboro Car Wash,-3.71,Services,Car Wash
+08/03/2025,TARGET T- 445 Albee Sq,-23.62,Groceries,Supermarket
+08/03/2025,TST* XI'AN FAMOUS FOOD,-15.41,Dining Out,Restaurant
+08/03/2025,TST* XI'AN FAMOUS FOOD,-15.41,Dining Out,Restaurant
+08/03/2025,MCDONALD'S F23533,-11.09,Dining Out,Fast Food
+08/03/2025,61620 - BROOKLYN R,-25.0,Bills & Housing,Rent
+08/03/2025,61620 - BROOKLYN R,-25.0,Bills & Housing,Rent
+08/03/2025,EXXON BISMA SERVICE CE,-30.0,Transportation,Gas Station
+08/03/2025,EXXON BISMA SERVICE CE,-30.0,Transportation,Gas Station
+08/03/2025,CHICK-FIL-A #05579,-6.63,Dining Out,Fast Food
+08/03/2025,MCDONALD'S F23533,-11.09,Dining Out,Fast Food
+08/03/2025,CHICK-FIL-A #05579,-6.63,Dining Out,Fast Food
+08/03/2025,MCDONALD'S F5632,-5.97,Dining Out,Fast Food
+08/03/2025,MCDONALD'S F5632,-5.97,Dining Out,Fast Food
+08/02/2025,CHICK-FIL-A #05579,-17.91,Dining Out,Fast Food
+08/02/2025,HALAL GRILL-UNION SQ,-13.55,Dining Out,Restaurant
+08/02/2025,HALAL GRILL-UNION SQ,-13.55,Dining Out,Restaurant
+08/02/2025,DM 561,-15.85,Groceries,Deli/Market
+08/02/2025,DM 561,-15.85,Groceries,Deli/Market
+08/02/2025,CHICK-FIL-A #05579,-17.91,Dining Out,Fast Food
+08/02/2025,,-194.02,Other,Unknown
+08/02/2025,WALGREENS 476 W UNION,-37.51,Health,Pharmacy
+08/02/2025,,-224.55,Other,Unknown
+08/02/2025,TST*XIAN FAMOUS FOODS,-9.2,Dining Out,Restaurant
+08/02/2025,TST*XIAN FAMOUS FOODS,-9.2,Dining Out,Restaurant
+08/02/2025,QUICK CHEK FOOD,-2.88,Groceries,Convenience Store
+08/02/2025,QUICK CHEK FOOD,-4.09,Groceries,Convenience Store
+08/02/2025,Hilton Brooklyn,-4.95,Travel,Hotels
+08/02/2025,Apple Services,-9.03,Subscriptions,Apple Services
+08/01/2025,"Adobe, Inc.",-21.76,Subscriptions,Apple Services
+08/01/2025,CITGO WILLIAMSBURG S,-30.0,Other,Unknown
+08/01/2025,DM 561,-15.57,Groceries,Deli/Market
+08/01/2025,DM 561,-15.57,Groceries,Deli/Market
+08/01/2025,CITGO WILLIAMSBURG S,-30.0,Other,Unknown
+08/01/2025,BP#9711805MEEKE,-30.0,Transportation,Gas Station
+08/01/2025,THE VILLAGE SMOKE LOFT,-31.61,Tobacco/Vape,Tobacco/Vape
+08/01/2025,THE VILLAGE SMOKE LOFT,-31.61,Tobacco/Vape,Tobacco/Vape
+08/01/2025,Apple Services,-42.53,Subscriptions,Apple Services
+08/01/2025,Grand Gourmet Deli NY,-7.8,Groceries,Deli/Market
+08/01/2025,Nayax **Franchard Nels,-0.8,Groceries,Convenience Store
+08/01/2025,Nayax **Franchard Nels,-0.8,Groceries,Convenience Store
+08/01/2025,Grand Gourmet Deli NY,-7.8,Groceries,Deli/Market
+08/01/2025,Daystay LLC,-5.0,Other,Unknown
+07/31/2025,Apple Services,-9.99,Subscriptions,Apple Services
+07/31/2025,TST*XIAN FAMOUS FOODS,-17.97,Dining Out,Restaurant
+07/31/2025,TST*XIAN FAMOUS FOODS,-17.97,Dining Out,Restaurant
+07/31/2025,SUNOCO 8000036702,-20.0,Transportation,Gas Station
+07/31/2025,SUNOCO 8000036702,-20.0,Transportation,Gas Station
+07/31/2025,Grand Gourmet Deli NY,-7.8,Groceries,Deli/Market
+07/31/2025,Grand Gourmet Deli NY,-7.8,Groceries,Deli/Market
+07/31/2025,SUNOCO 8000036702,-2.44,Transportation,Gas Station
+07/31/2025,SUNOCO 8000036702,-2.44,Transportation,Gas Station
+07/30/2025,PayPal Inc.,-45.0,Services,PayPal Fees
+07/30/2025,SUNOCO 0368304201,-15.94,Transportation,Gas Station
+07/30/2025,SUNOCO 0368304201,-15.94,Transportation,Gas Station
+07/30/2025,KOHL'S #0387,-50.11,Shopping,Clothing
+07/30/2025,KOHL'S #0387,-50.11,Shopping,Clothing
+07/30/2025,KOHL'S #0387,-52.99,Shopping,Clothing
+07/30/2025,KOHL'S #0387,-52.99,Shopping,Clothing
+07/30/2025,SQ *A PLUS TEAM LLC,-60.75,Dining Out,Restaurant
+07/30/2025,,-380.81,Other,Unknown
+07/30/2025,DD *DOORDASH,-13.01,Food Delivery,Delivery
+07/30/2025,DD *DOORDASH,-13.01,Food Delivery,Delivery
+07/30/2025,Apple Services,-2.12,Subscriptions,Apple Services
+07/30/2025,Apple Services,-5.31,Subscriptions,Apple Services
+07/29/2025,QUICK CHEK FOOD,-14.96,Groceries,Convenience Store
+07/29/2025,MCDONALD'S F23533,-9.57,Dining Out,Fast Food
+07/29/2025,MCDONALD'S F23533,-9.57,Dining Out,Fast Food
+07/29/2025,SPRINGHILL SUITES NY,-1.0,Other,Unknown
+07/29/2025,SPRINGHILL SUITES NY,-1.0,Other,Unknown
+07/28/2025,DD *DOORDASH WAWA,-22.25,Food Delivery,Delivery
+07/28/2025,POPEYES 13668,-14.14,Dining Out,Fast Food
+07/28/2025,POPEYES 13668,-14.14,Dining Out,Fast Food
+07/28/2025,JC DELI & GRILL,-18.15,Groceries,Deli/Market
+07/28/2025,JC DELI & GRILL,-18.15,Groceries,Deli/Market
+07/28/2025,DD *DOORDASH CHIPOTLEM,-21.66,Dining Out,Fast Food
+07/28/2025,DD *DOORDASH CHIPOTLEM,-21.66,Dining Out,Fast Food
+07/28/2025,WAWA 8341,-30.01,Groceries,Convenience Store
+07/28/2025,DD *DOORDASH WAWA,-22.25,Food Delivery,Delivery
+07/28/2025,CONOCO - YOUR BANK,-30.0,Transportation,Gas Station
+07/28/2025,CONOCO - YOUR BANK,-30.0,Transportation,Gas Station
+07/28/2025,WAWA 8341,-30.01,Groceries,Convenience Store
+07/28/2025,Dicks Sporting Goods,-54.0,Shopping,Electronics
+07/28/2025,Dicks Sporting Goods,-54.0,Shopping,Electronics
+07/28/2025,,-68.06,Other,Unknown
+07/28/2025,WILLIAMSBURG ORGANIC D,-3.12,Groceries,Supermarket
+07/28/2025,WILLIAMSBURG ORGANIC D,-3.12,Groceries,Supermarket
+07/28/2025,MCDONALD'S F23375,-2.12,Dining Out,Fast Food
+07/28/2025,MCDONALD'S F23375,-2.12,Dining Out,Fast Food
+07/27/2025,,-45.0,Other,Unknown
+07/27/2025,"DoorDash, Inc.",-16.99,Food Delivery,Delivery
+07/27/2025,NST BEST BUY #544  002461,-67.69,Other,Unknown
+07/27/2025,,-59.91,Other,Unknown
+07/27/2025,,-97.01,Other,Unknown
+07/27/2025,"GoDaddy.com, LLC",-9.79,Subscriptions,Software
+07/27/2025,DD *DOORDASHDASHPASS,-9.99,Food Delivery,Delivery
+07/27/2025,DD *DOORDASHDASHPASS,-9.99,Food Delivery,Delivery
+07/26/2025,Apple Services,-10.99,Subscriptions,Apple Services
+07/26/2025,DM 561,-49.91,Groceries,Deli/Market
+07/26/2025,DM 561,-49.91,Groceries,Deli/Market
+07/26/2025,Grand Gourmet Deli NY,-5.46,Groceries,Deli/Market
+07/26/2025,Grand Gourmet Deli NY,-5.46,Groceries,Deli/Market
+07/26/2025,Grand Gourmet Deli NY,-2.6,Groceries,Deli/Market
+07/26/2025,Grand Gourmet Deli NY,-2.6,Groceries,Deli/Market
+07/26/2025,Grand Gourmet Deli NY,-2.08,Groceries,Deli/Market
+07/26/2025,Grand Gourmet Deli NY,-2.08,Groceries,Deli/Market
+07/25/2025,"Adobe, Inc.",-21.76,Subscriptions,Apple Services
+07/25/2025,,-50.0,Other,Unknown
+07/25/2025,,-54.16,Other,Unknown
+07/25/2025,PayPal Inc.,-54.16,Services,PayPal Fees
+07/25/2025,SQ *HENA350INC,-11.0,Dining Out,Restaurant
+07/25/2025,SQ *HENA350INC,-11.0,Dining Out,Restaurant
+07/25/2025,DM 561,-8.3,Groceries,Deli/Market
+07/25/2025,DM 561,-8.3,Groceries,Deli/Market
+07/24/2025,TOWNPLACE SUITES,-6.0,Other,Unknown
+07/24/2025,TST*MAMA PHO - GRAND S,-34.25,Dining Out,Restaurant
+07/24/2025,TOWNPLACE SUITES,-6.0,Other,Unknown
+07/24/2025,61620 - BROOKLYN R,-40.0,Bills & Housing,Rent
+07/24/2025,61620 - BROOKLYN R,-40.0,Bills & Housing,Rent
+07/24/2025,Grand Gourmet Deli NY,-2.6,Groceries,Deli/Market
+07/24/2025,Grand Gourmet Deli NY,-2.6,Groceries,Deli/Market
+07/24/2025,TST*MAMA PHO - GRAND S,-3.27,Dining Out,Restaurant
+07/23/2025,BP#4835914GRAND,-20.0,Transportation,Gas Station
+07/23/2025,PRET A MANGER 3400818,-9.15,Other,Unknown
+07/23/2025,,-9.75,Other,Unknown
+07/23/2025,Chime,-10.0,Services,PayPal Fees
+07/23/2025,Chime,-10.0,Services,PayPal Fees
+07/23/2025,CHICK FIL A 3400812,-16.79,Other,Unknown
+07/23/2025,CHICK FIL A 3400812,-16.79,Other,Unknown
+07/23/2025,UBR* PENDING.UBER.COM,-61.58,Rideshare - Uber,Rideshare - Uber
+07/23/2025,BOUND BROOK CONVENIENC,-22.37,Groceries,Deli/Market
+07/23/2025,BOUND BROOK CONVENIENC,-22.37,Groceries,Deli/Market
+07/23/2025,,-29.08,Other,Unknown
+07/23/2025,UBR* PENDING.UBER.COM,-61.58,Rideshare - Uber,Rideshare - Uber
+07/23/2025,Apple Services,-5.31,Subscriptions,Apple Services
+07/23/2025,Chime,-190.0,Services,PayPal Fees
+07/23/2025,Chime,-190.0,Services,PayPal Fees
+07/23/2025,Chime,-200.0,Services,PayPal Fees
+07/23/2025,PRET A MANGER 3400818,-9.15,Other,Unknown
+07/23/2025,Chime,-200.0,Services,PayPal Fees
+07/23/2025,SQ *HENA350INC,-3.0,Dining Out,Restaurant
+07/23/2025,SQ *HENA350INC,-3.0,Dining Out,Restaurant
+07/22/2025,TARGET T- 200 Promenad,-12.13,Groceries,Supermarket
+07/22/2025,Grand Gourmet Deli NY,-6.24,Groceries,Deli/Market
+07/22/2025,7-ELEVEN,-9.2,Groceries,Convenience Store
+07/22/2025,Chime,-300.0,Services,PayPal Fees
+07/22/2025,DD *DOORDASH ARTICHOKE,-33.21,Food Delivery,Delivery
+07/22/2025,DD *DOORDASH ARTICHOKE,-33.21,Food Delivery,Delivery
+07/22/2025,Chime,-300.0,Services,PayPal Fees
+07/22/2025,Grand Gourmet Deli NY,-6.24,Groceries,Deli/Market
+07/22/2025,CPI*CPI*CANTEEN VENDIN,-3.6,Groceries,Convenience Store
+07/22/2025,Grand Gourmet Deli NY,-4.16,Groceries,Deli/Market
+07/22/2025,Grand Gourmet Deli NY,-4.16,Groceries,Deli/Market
+07/22/2025,CPI*CPI*CANTEEN VENDIN,-3.6,Groceries,Convenience Store
+07/22/2025,CPI*CPI*CANTEEN VENDIN,-2.35,Groceries,Convenience Store
+07/22/2025,CPI*CPI*CANTEEN VENDIN,-2.35,Groceries,Convenience Store
+07/21/2025,UBER   *TRIP,-86.53,Rideshare - Uber,Rideshare - Uber
+07/21/2025,CHICK-FIL-A #04352,-12.57,Dining Out,Fast Food
+07/21/2025,CHICK-FIL-A #04352,-12.57,Dining Out,Fast Food
+07/21/2025,UBR* PENDING.UBER.COM,-84.91,Rideshare - Uber,Rideshare - Uber
+07/21/2025,UBER   *TRIP,-86.53,Rideshare - Uber,Rideshare - Uber
+07/21/2025,JC DELI & GRILL,-9.6,Groceries,Deli/Market
+07/21/2025,JC DELI & GRILL,-9.6,Groceries,Deli/Market
+07/20/2025,DM 561,-16.73,Groceries,Deli/Market
+07/20/2025,Liberty Vending LLC,-5.0,Groceries,Convenience Store
+07/20/2025,Chime,-5.0,Services,PayPal Fees
+07/20/2025,NJ MONTHLY,-9.77,Other,Unknown
+07/20/2025,NJ MONTHLY,-9.77,Other,Unknown
+07/20/2025,DM 561,-16.73,Groceries,Deli/Market
+07/20/2025,"DoorDash, Inc.",-100.23,Food Delivery,Delivery
+07/20/2025,SUNOCO 0368304201,-20.23,Transportation,Gas Station
+07/20/2025,SUNOCO 0368304201,-20.23,Transportation,Gas Station
+07/20/2025,Liberty Vending LLC,-3.1,Groceries,Convenience Store
+07/20/2025,Chime,-5.0,Services,PayPal Fees
+07/20/2025,Liberty Vending LLC,-3.1,Groceries,Convenience Store
+07/20/2025,CPI*CPI*ALL AMERICAN V,-2.6,Other,Unknown
+07/20/2025,Apple Services,-2.12,Subscriptions,Apple Services
+07/20/2025,MCDONALD'S F23533,-2.38,Dining Out,Fast Food
+07/20/2025,MCDONALD'S F23533,-2.38,Dining Out,Fast Food
+07/20/2025,CPI*CPI*ALL AMERICAN V,-2.6,Other,Unknown
+07/19/2025,WAWA 8323,-9.13,Groceries,Convenience Store
+07/19/2025,WAWA 8323,-9.13,Groceries,Convenience Store
+07/19/2025,CONOCO - YOUR BANK,-30.0,Transportation,Gas Station
+07/19/2025,TARGET T- 621 W Edgar,-108.39,Groceries,Supermarket
+07/19/2025,Liberty Vending LLC,-6.0,Groceries,Convenience Store
+07/19/2025,Liberty Vending LLC,-2.1,Groceries,Convenience Store
+07/19/2025,Liberty Vending LLC,-2.1,Groceries,Convenience Store
+07/19/2025,WAWA 8323,-4.78,Groceries,Convenience Store
+07/19/2025,WAWA 8323,-4.78,Groceries,Convenience Store
+07/19/2025,CPI*CPI*ALL AMERICAN V,-2.6,Other,Unknown
+07/19/2025,CPI*CPI*ALL AMERICAN V,-2.1,Other,Unknown
+07/18/2025,CHIPOTLE 2090,-22.59,Dining Out,Fast Food
+07/18/2025,SQ *HENA350INC,-3.0,Dining Out,Restaurant
+07/18/2025,Apple Services,-6.37,Subscriptions,Apple Services
+07/18/2025,Apple Services,-8.5,Subscriptions,Apple Services
+07/18/2025,CONOCO - YOUR BANK,-30.0,Transportation,Gas Station
+07/18/2025,CONOCO - YOUR BANK,-30.0,Transportation,Gas Station
+07/18/2025,DD *DOORDASH YEMENCAFE,-37.94,Dining Out,Restaurant
+07/18/2025,DD *DOORDASH YEMENCAFE,-37.94,Dining Out,Restaurant
+07/18/2025,SQ *HENA350INC,-3.0,Dining Out,Restaurant
+07/18/2025,CHIPOTLE 2090,-22.59,Dining Out,Fast Food
+07/17/2025,,-9.7,Other,Unknown
+07/17/2025,DM 561,-10.52,Groceries,Deli/Market
+07/17/2025,DM 561,-10.52,Groceries,Deli/Market
+07/17/2025,DD *DOORDASH XIANFAMOU,-20.97,Food Delivery,Delivery
+07/17/2025,DD *DOORDASH XIANFAMOU,-20.97,Food Delivery,Delivery
+07/17/2025,61620 - BROOKLYN R,-30.0,Bills & Housing,Rent
+07/17/2025,61620 - BROOKLYN R,-30.0,Bills & Housing,Rent
+07/17/2025,,-33.48,Other,Unknown
+07/16/2025,Patreon* Membership,-11.99,Subscriptions,Apple Services
+07/16/2025,STARBUCKS STORE 1180,-6.48,Other,Unknown
+07/16/2025,,-20.17,Other,Unknown
+07/16/2025,Apple Services,-5.31,Subscriptions,Apple Services
+07/16/2025,STARBUCKS STORE 1180,-6.48,Other,Unknown
+07/16/2025,Patreon* Membership,-11.99,Subscriptions,Apple Services
+07/16/2025,,-4.69,Other,Unknown
+07/16/2025,THE BEST OF NEW YORK F,-3.96,Other,Unknown
+07/16/2025,THE BEST OF NEW YORK F,-3.96,Other,Unknown
+07/14/2025,WALGREENS 210 UNION AV,-4.23,Health,Pharmacy
+07/14/2025,DD *DOORDASH XIANFAMOU,-15.5,Food Delivery,Delivery
+07/14/2025,CHICK-FIL-A #03993,-14.0,Dining Out,Fast Food
+07/14/2025,CHICK-FIL-A #03993,-14.0,Dining Out,Fast Food
+07/14/2025,DM 561,-11.32,Groceries,Deli/Market
+07/14/2025,DM 561,-11.32,Groceries,Deli/Market
+07/14/2025,DD *DOORDASH XIANFAMOU,-15.5,Food Delivery,Delivery
+07/13/2025,MCDONALD'S F23375,-0.28,Dining Out,Fast Food
+07/13/2025,Dicks Sporting Goods,-72.99,Shopping,Electronics
+07/13/2025,Dicks Sporting Goods,-72.99,Shopping,Electronics
+07/13/2025,Grand Gourmet Deli NY,-16.12,Groceries,Deli/Market
+07/13/2025,Apple Services,-5.43,Subscriptions,Apple Services
+07/13/2025,Apple Services,-2.12,Subscriptions,Apple Services
+07/13/2025,Grand Gourmet Deli NY,-16.12,Groceries,Deli/Market
+07/13/2025,MCDONALD'S F23375,-0.28,Dining Out,Fast Food
+07/12/2025,MCDONALD'S F23533,-14.69,Dining Out,Fast Food
+07/12/2025,MCDONALD'S F23533,-14.69,Dining Out,Fast Food
+07/12/2025,Apple Services,-10.88,Subscriptions,Apple Services
+07/12/2025,Apple Services,-14.38,Subscriptions,Apple Services
+07/12/2025,GASOLINE 123 INC.,-15.0,Transportation,Gas Station
+07/12/2025,GASOLINE 123 INC.,-15.0,Transportation,Gas Station
+07/12/2025,Apple Services,-21.76,Subscriptions,Apple Services
+07/12/2025,CONOCO - YOUR BANK,-30.0,Transportation,Gas Station
+07/12/2025,CONOCO - YOUR BANK,-30.0,Transportation,Gas Station
+07/12/2025,,-66.0,Other,Unknown
+07/12/2025,Apple Services,-2.17,Subscriptions,Apple Services
+07/11/2025,DD *DOORDASH XIANFAMOU,-26.19,Food Delivery,Delivery
+07/11/2025,DD *DOORDASH XIANFAMOU,-26.19,Food Delivery,Delivery
+07/11/2025,,-105.29,Other,Unknown
+07/10/2025,MCDONALD'S F2955,-2.38,Dining Out,Fast Food
+07/10/2025,MCDONALD'S F2955,-2.38,Dining Out,Fast Food
+07/09/2025,Apple Services,-6.52,Subscriptions,Apple Services
+07/09/2025,TARGET T- 25-01 Jackso,-26.55,Groceries,Supermarket
+07/09/2025,TARGET T- 25-01 Jackso,-34.36,Groceries,Supermarket
+07/09/2025,TST*MAMA PHO - GRAND S,-17.13,Dining Out,Restaurant
+07/09/2025,TST*MAMA PHO - GRAND S,-17.13,Dining Out,Restaurant
+07/08/2025,Apple Services,-2.17,Subscriptions,Apple Services
+07/08/2025,RACESTAR FOOD MART,-34.5,Groceries,Convenience Store
+07/08/2025,RACESTAR FOOD MART,-34.5,Groceries,Convenience Store
+07/08/2025,Grand Gourmet Deli NY,-10.4,Groceries,Deli/Market
+07/08/2025,Grand Gourmet Deli NY,-10.4,Groceries,Deli/Market
+07/07/2025,Grand Gourmet Deli NY,-19.76,Groceries,Deli/Market
+07/07/2025,Grand Gourmet Deli NY,-19.76,Groceries,Deli/Market
+07/06/2025,VESTA  *AT&T PREPAID,-66.39,Bills & Housing,Phone/Internet
+07/06/2025,DD *DOORDASH XIANFAMOU,-16.99,Food Delivery,Delivery
+07/06/2025,DD *DOORDASH XIANFAMOU,-16.99,Food Delivery,Delivery
+07/06/2025,VESTA  *AT&T PREPAID,-11.23,Bills & Housing,Phone/Internet
+07/06/2025,QUICK CHEK CORP,-3.2,Groceries,Convenience Store
+07/06/2025,QUICK CHEK CORP,-1.99,Groceries,Convenience Store
+07/05/2025,DD *DOORDASH BUFFALOWI,-20.01,Food Delivery,Delivery
+07/05/2025,CHICK-FIL-A #03993,-3.15,Dining Out,Fast Food
+07/05/2025,DD *DOORDASH BUFFALOWI,-20.01,Food Delivery,Delivery
+07/05/2025,DD *DOORDASH WAWA,-22.39,Food Delivery,Delivery
+07/05/2025,DD *DOORDASH WAWA,-22.39,Food Delivery,Delivery
+07/05/2025,Apple Services,-10.88,Subscriptions,Apple Services
+07/05/2025,Apple Services,-9.24,Subscriptions,Apple Services
+07/05/2025,CHICK-FIL-A #03993,-3.15,Dining Out,Fast Food
+07/04/2025,FEDEX OFFICE #998,-1.91,Shipping,Shipping
+07/04/2025,BOUND BROOK CONVENIENC,-3.73,Groceries,Deli/Market
+07/04/2025,BOUND BROOK CONVENIENC,-3.73,Groceries,Deli/Market
+07/04/2025,BOUND BROOK CONVENIENC,-2.67,Groceries,Deli/Market
+07/04/2025,FEDEX OFFICE #998,-1.91,Shipping,Shipping
+07/04/2025,BOUND BROOK CONVENIENC,-2.67,Groceries,Deli/Market
+07/03/2025,SPACE MARKET,-6.99,Groceries,Supermarket
+07/03/2025,7-ELEVEN,-3.4,Groceries,Convenience Store
+07/03/2025,OZZIE S FRESH MARKET #,-5.5,Groceries,Supermarket
+07/03/2025,OZZIE S FRESH MARKET #,-5.5,Groceries,Supermarket
+07/03/2025,Great Tokyo Mart,-5.69,Other,Unknown
+07/03/2025,Great Tokyo Mart,-5.69,Other,Unknown
+07/03/2025,SPACE MARKET,-6.99,Groceries,Supermarket
+07/03/2025,WALGREENS 476 W UNION,-9.3,Health,Pharmacy
+07/03/2025,TARGET T- 200 Promenad,-80.8,Groceries,Supermarket
+07/03/2025,OZZIE S FRESH MARKET #,-0.37,Groceries,Supermarket
+07/03/2025,OZZIE S FRESH MARKET #,-0.37,Groceries,Supermarket
+07/02/2025,TST*YIA YIAS- HOMEMADE,-34.64,Dining Out,Restaurant
+07/02/2025,TST*YIA YIAS- HOMEMADE,-34.64,Dining Out,Restaurant
+07/01/2025,NNT 518 GRAB & GO C130390,-27.22,Other,Unknown
+07/01/2025,Grand Gourmet Deli NY,-14.56,Groceries,Deli/Market
+07/01/2025,Grand Gourmet Deli NY,-14.56,Groceries,Deli/Market
+`;
+
+    console.log("CSV data loaded, size:", csvData.length, "characters");
+
+    const status = document.getElementById('statusMsg');
+    status.innerText = "Parsing data...";
+
+    try {
+      // Parse CSV using PapaParse
+      const parsed = Papa.parse(csvData, {
+        header: true,
+        dynamicTyping: true,
+        skipEmptyLines: true
+      });
+
+      if (parsed.errors.length > 0) {
+        console.error("CSV parsing errors:", parsed.errors);
+      }
+
+      console.log("Parsed", parsed.data.length, "transactions");
+
+      status.innerText = "Processing transactions...";
+      this.processRows(parsed.data);
+
+      status.innerText = `Loaded ${this.data.length} transactions • July-Dec 2025`;
+      console.log("Dashboard ready! Data:", this.data.length, "transactions");
+
+    } catch (error) {
+      console.error("Error loading dashboard:", error);
+      status.innerText = "Error loading data - check console";
+      status.style.color = "#ef4444";
+    }
+  },
+
+  parseData(csvText) {
+    const status = document.getElementById('statusMsg');
+    status.innerText = "Processing...";
+
+    const lines = csvText.split(/\r\n|\n/);
+    let startIndex = 0;
+    for (let i = 0; i < Math.min(lines.length, 20); i++) {
+      if (lines[i].toLowerCase().includes('date') &&
+         (lines[i].toLowerCase().includes('amount') || lines[i].toLowerCase().includes('description'))) {
+        startIndex = i;
+        break;
+      }
+    }
+    const cleanCSV = lines.slice(startIndex).join('\n');
+
+    Papa.parse(cleanCSV, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (res) => {
+        if (res.data.length === 0) {
+          status.innerText = "Error: No data";
+          return;
+        }
+        this.processRows(res.data);
+        status.innerText = `Loaded ${this.data.length} transactions`;
+      }
+    });
+  },
+
+  processRows(rows) {
+    // Data is already pre-filtered to July-December 2025
+
+    this.data = rows.map(row => {
+      let rawAmt = row['Amount'] || row['Net'] || '0';
+      let amt = parseFloat(rawAmt.toString().replace(/[^0-9.-]/g, ''));
+      if (isNaN(amt)) return null;
+
+      const isUserFormat = row['Group'] !== undefined;
+      if (isUserFormat && amt > 0) {
+        const group = (row['Group'] || '').toLowerCase();
+        const cat = (row['Category'] || '').toLowerCase();
+        const isIncome = group.includes('income') || cat.includes('income') || cat.includes('deposit');
+        if (!isIncome) amt = -amt;
+      }
+
+      let name = (row['Description'] || row['Name'] || 'Unknown').replace(/ nan$/i, '').trim();
+      let date = new Date(row['Date']);
+      if (isNaN(date.getTime())) date = new Date();
+
+      let rawGroup = row['Group'] || '';
+      let rawSubCat = row['Category'] || row['Type'] || '';
+
+      const remapped = this.categoryRemap(rawGroup, rawSubCat, name);
+      if (remapped === null) return null;
+
+      let group = remapped ? remapped.group : 'Subscriptions';
+      let category = remapped ? remapped.cat : 'Other Services';
+
+      let type = 'out';
+      if (amt > 0) type = 'in';
+
+      return {
+        date,
+        name,
+        amount: Math.abs(amt),
+        type,
+        group,
+        category
+      };
+    }).filter(d => d !== null);
+
+    this.data.sort((a, b) => b.date - a.date);
+    this.render();
+  },
+
+  render() {
+    console.log("Rendering dashboard with", this.data.length, "transactions");
+    const all = this.data;
+    const spend = all.filter(d => d.type === 'out');
+    const income = all.filter(d => d.type === 'in');
+
+    const totalSpend = spend.reduce((a, b) => a + b.amount, 0);
+    const totalIncome = income.reduce((a, b) => a + b.amount, 0);
+
+    document.getElementById('kpiSpend').innerText = this.fmt.format(totalSpend);
+    document.getElementById('kpiIncome').innerText = this.fmt.format(totalIncome);
+    document.getElementById('kpiCount').innerText = all.length;
+    document.getElementById('kpiNet').innerText = this.fmt.format(totalIncome - totalSpend);
+    document.getElementById('kpiNet').style.color = (totalIncome - totalSpend) >= 0 ? '#10b981' : '#ef4444';
+
+    const uniqueMonths = new Set(spend.map(d => d.date.getFullYear() + '-' + d.date.getMonth())).size || 1;
+    document.getElementById('kpiBurn').innerText = this.fmt.format(totalSpend / uniqueMonths);
+
+    this.renderKeyInsights(spend, totalSpend);
+    this.renderComparisonChart(spend);
+    this.renderStackedAreaChart(spend);
+    this.renderCategoryTrendsOverlay(spend);
+    this.renderCategoryDrivers(spend, totalSpend);
+    this.renderSankey(spend, totalSpend);
+    this.renderPareto(spend);
+    this.renderTrend(spend, income);
+    this.renderTables(spend, all);
+  },
+
+  renderKeyInsights(data, total) {
+    // Split data into recent 3 months vs previous 3 months for comparison
+    const sortedData = [...data].sort((a, b) => b.date - a.date);
+    const mostRecentDate = sortedData[0]?.date || new Date();
+
+    const threeMonthsAgo = new Date(mostRecentDate);
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+    const sixMonthsAgo = new Date(mostRecentDate);
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    // Recent 3 months
+    const recentData = data.filter(d => d.date >= threeMonthsAgo);
+    const recentTotal = recentData.reduce((a, b) => a + b.amount, 0);
+
+    // Previous 3 months
+    const previousData = data.filter(d => d.date >= sixMonthsAgo && d.date < threeMonthsAgo);
+    const previousTotal = previousData.reduce((a, b) => a + b.amount, 0);
+
+    // Calculate category totals for recent period
+    const transportRecent = recentData.filter(d => d.group === 'Transportation').reduce((a, b) => a + b.amount, 0);
+    const deliveryDiningRecent = recentData.filter(d => d.group === 'Dining & Cafes').reduce((a, b) => a + b.amount, 0);
+    const groceryRecent = recentData.filter(d => d.group === 'Groceries').reduce((a, b) => a + b.amount, 0);
+
+    // Calculate category totals for previous period
+    const transportPrev = previousData.filter(d => d.group === 'Transportation').reduce((a, b) => a + b.amount, 0);
+    const deliveryDiningPrev = previousData.filter(d => d.group === 'Dining & Cafes').reduce((a, b) => a + b.amount, 0);
+    const groceryPrev = previousData.filter(d => d.group === 'Groceries').reduce((a, b) => a + b.amount, 0);
+
+    // Percentages of total spend
+    const transportPct = ((transportRecent / recentTotal) * 100).toFixed(0);
+    const deliveryPct = ((deliveryDiningRecent / recentTotal) * 100).toFixed(0);
+    const groceryPct = ((groceryRecent / recentTotal) * 100).toFixed(0);
+    const combinedPct = (((transportRecent + deliveryDiningRecent + groceryRecent) / recentTotal) * 100).toFixed(0);
+
+    // Calculate changes
+    const transportChange = previousTotal > 0 ? (((transportRecent / recentTotal) - (transportPrev / previousTotal)) * 100).toFixed(0) : 0;
+    const deliveryChange = previousTotal > 0 ? (((deliveryDiningRecent / recentTotal) - (deliveryDiningPrev / previousTotal)) * 100).toFixed(0) : 0;
+    const groceryChange = previousTotal > 0 ? (((groceryRecent / recentTotal) - (groceryPrev / previousTotal)) * 100).toFixed(0) : 0;
+
+    // Update UI
+    document.getElementById('transportPct').innerText = transportPct + '%';
+    document.getElementById('deliveryPct').innerText = deliveryPct + '%';
+    document.getElementById('groceryPct').innerText = groceryPct + '%';
+    document.getElementById('combinedPct').innerText = combinedPct + '%';
+
+    const arrow = (val) => parseFloat(val) >= 0 ? '↑' : '↓';
+    const sign = (val) => parseFloat(val) >= 0 ? '+' : '';
+
+    document.getElementById('transportChange').innerHTML = `${arrow(transportChange)} ${sign(transportChange)}${transportChange}pp QoQ`;
+    document.getElementById('deliveryChange').innerHTML = `${arrow(deliveryChange)} ${sign(deliveryChange)}${deliveryChange}pp QoQ`;
+    document.getElementById('groceryChange').innerHTML = `${arrow(groceryChange)} ${sign(groceryChange)}${groceryChange}pp QoQ`;
+
+    // Generate dynamic insight description
+    const topCategories = [
+      { name: 'Transportation', pct: transportPct, amount: transportRecent },
+      { name: 'Delivery & Dining', pct: deliveryPct, amount: deliveryDiningRecent },
+      { name: 'Groceries', pct: groceryPct, amount: groceryRecent }
+    ].sort((a, b) => b.amount - a.amount);
+
+    const insightText = `In the recent quarter, <strong>${combinedPct}%</strong> of total expenditure (${this.fmt.format(transportRecent + deliveryDiningRecent + groceryRecent)}) concentrated in three primary categories: Transportation, Food Services, and Groceries. This represents a notable shift in allocation patterns compared to the previous quarter. ${topCategories[0].name} accounts for ${topCategories[0].pct}% of total spend, followed by ${topCategories[1].name} (${topCategories[1].pct}%) and ${topCategories[2].name} (${topCategories[2].pct}%).`;
+
+    document.getElementById('insightsDesc').innerHTML = insightText;
+  },
+
+  renderComparisonChart(data) {
+    const ctx = document.getElementById('comparisonChart');
+    if (this.charts.comparison) this.charts.comparison.destroy();
+
+    // Split data into recent 3 months vs previous 3 months
+    const sortedData = [...data].sort((a, b) => b.date - a.date);
+    const mostRecentDate = sortedData[0]?.date || new Date();
+
+    const threeMonthsAgo = new Date(mostRecentDate);
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+    const sixMonthsAgo = new Date(mostRecentDate);
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    // Recent 3 months
+    const recentData = data.filter(d => d.date >= threeMonthsAgo);
+    const previousData = data.filter(d => d.date >= sixMonthsAgo && d.date < threeMonthsAgo);
+
+    // Calculate category totals
+    const categories = ['Transportation', 'Dining & Cafes', 'Groceries', 'Subscriptions', 'Bills & Utilities', 'Retail & Shopping'];
+
+    const recentTotals = categories.map(cat =>
+      recentData.filter(d => d.group === cat).reduce((a, b) => a + b.amount, 0)
+    );
+
+    const previousTotals = categories.map(cat =>
+      previousData.filter(d => d.group === cat).reduce((a, b) => a + b.amount, 0)
+    );
+
+    // Calculate differences
+    const differences = categories.map((cat, i) => {
+      return recentTotals[i] - previousTotals[i];
+    });
+
+    const colorMap = {
+      'Transportation': '#3b82f6',
+      'Dining & Cafes': '#f59e0b',
+      'Groceries': '#10b981',
+      'Subscriptions': '#8b5cf6',
+      'Bills & Utilities': '#ef4444',
+      'Retail & Shopping': '#ec4899'
+    };
+
+    this.charts.comparison = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: categories,
+        datasets: [
+          {
+            label: 'Previous Quarter',
+            data: previousTotals,
+            backgroundColor: categories.map(cat => colorMap[cat] + '30'),
+            borderColor: categories.map(cat => colorMap[cat]),
+            borderWidth: 2,
+            borderRadius: 8,
+            barPercentage: 0.7
+          },
+          {
+            label: 'Recent Quarter',
+            data: recentTotals,
+            backgroundColor: categories.map(cat => colorMap[cat]),
+            borderColor: categories.map(cat => colorMap[cat]),
+            borderWidth: 2,
+            borderRadius: 8,
+            barPercentage: 0.7
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              font: { size: 12, weight: 600 },
+              padding: 12,
+              usePointStyle: true,
+              pointStyle: 'rectRounded'
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const label = context.dataset.label || '';
+                const value = context.parsed.y;
+                return `${label}: ${this.fmt.format(value)}`;
+              },
+              afterLabel: (context) => {
+                if (context.datasetIndex === 1) {
+                  const diff = differences[context.dataIndex];
+                  const pctChange = previousTotals[context.dataIndex] > 0
+                    ? ((diff / previousTotals[context.dataIndex]) * 100).toFixed(1)
+                    : 0;
+                  const arrow = diff >= 0 ? '↑' : '↓';
+                  const sign = diff >= 0 ? '+' : '';
+                  return `${arrow} ${sign}${this.fmt.format(diff)} (${sign}${pctChange}%)`;
+                }
+                return '';
+              }
+            },
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            padding: 12,
+            titleFont: { size: 13, weight: 'bold' },
+            bodyFont: { size: 12 },
+            bodySpacing: 8
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: {
+              font: { size: 11, weight: 600 }
+            }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(0, 0, 0, 0.05)' },
+            ticks: {
+              callback: (value) => '$' + (value / 1000).toFixed(0) + 'k',
+              font: { size: 11 }
+            }
+          }
+        }
+      }
+    });
+  },
+
+  renderStackedAreaChart(data) {
+    const ctx = document.getElementById('stackedAreaChart');
+    if (this.charts.stackedArea) this.charts.stackedArea.destroy();
+
+    // Group by month
+    const monthlyData = {};
+    data.forEach(d => {
+      const monthKey = d.date.toLocaleString('default', { month: 'short', year: '2-digit' });
+      if (!monthlyData[monthKey]) monthlyData[monthKey] = {};
+
+      const group = d.group;
+      if (!monthlyData[monthKey][group]) monthlyData[monthKey][group] = 0;
+      monthlyData[monthKey][group] += d.amount;
+    });
+
+    const sortedMonths = Object.keys(monthlyData).sort((a, b) => {
+      return new Date('01 ' + a.replace('-', ' ')) - new Date('01 ' + b.replace('-', ' '));
+    });
+
+    const categories = ['Transportation', 'Dining & Cafes', 'Groceries', 'Subscriptions', 'Bills & Utilities', 'Retail & Shopping'];
+
+    const datasets = categories.map(cat => {
+      const color = {
+        'Transportation': '#22d3ee',
+        'Dining & Cafes': '#fb923c',
+        'Groceries': '#10b981',
+        'Subscriptions': '#8b5cf6',
+        'Bills & Utilities': '#3b82f6',
+        'Retail & Shopping': '#e879f9'
+      }[cat];
+
+      return {
+        label: cat,
+        data: sortedMonths.map(month => monthlyData[month][cat] || 0),
+        backgroundColor: color + 'CC',
+        borderColor: color,
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        pointBackgroundColor: color,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2
+      };
+    });
+
+    this.charts.stackedArea = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: sortedMonths,
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              font: { size: 13, weight: 600 },
+              padding: 15,
+              usePointStyle: true,
+              pointStyle: 'circle'
+            }
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: 12,
+            titleFont: { size: 14, weight: 'bold' },
+            bodyFont: { size: 13 },
+            bodySpacing: 8,
+            callbacks: {
+              label: (context) => {
+                return `${context.dataset.label}: ${this.fmt.format(context.parsed.y)}`;
+              },
+              footer: (items) => {
+                const total = items.reduce((sum, item) => sum + item.parsed.y, 0);
+                return '\nTotal: ' + this.fmt.format(total);
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: {
+              font: { size: 12, weight: 600 },
+              maxRotation: 45,
+              minRotation: 45
+            }
+          },
+          y: {
+            stacked: true,
+            beginAtZero: true,
+            grid: { color: 'rgba(0, 0, 0, 0.05)' },
+            ticks: {
+              callback: (value) => '$' + (value / 1000).toFixed(0) + 'k',
+              font: { size: 12 }
+            },
+            title: {
+              display: true,
+              text: 'Monthly Spending',
+              font: { size: 13, weight: 600 }
+            }
+          }
+        }
+      }
+    });
+  },
+
+  renderCategoryTrendsOverlay(data) {
+    const categoryMonthly = {};
+
+    data.forEach(d => {
+      const key = d.group;
+      const monthKey = d.date.toLocaleString('default', { month: 'short', year: '2-digit' });
+
+      if (!categoryMonthly[key]) categoryMonthly[key] = {};
+      if (!categoryMonthly[key][monthKey]) categoryMonthly[key][monthKey] = 0;
+      categoryMonthly[key][monthKey] += d.amount;
+    });
+
+    const topCategories = Object.entries(categoryMonthly)
+      .map(([cat, months]) => ({
+        category: cat,
+        total: Object.values(months).reduce((a, b) => a + b, 0),
+        months: months
+      }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 6);
+
+    const allMonths = new Set();
+    topCategories.forEach(item => {
+      Object.keys(item.months).forEach(m => allMonths.add(m));
+    });
+
+    const sortedMonths = Array.from(allMonths).sort((a, b) => {
+      return new Date('01 ' + a.replace('-', ' ')) - new Date('01 ' + b.replace('-', ' '));
+    });
+
+    const colorMap = {
+      'Transportation': '#3b82f6',
+      'Dining & Cafes': '#f59e0b',
+      'Groceries': '#10b981',
+      'Subscriptions': '#8b5cf6',
+      'Bills & Utilities': '#ef4444',
+      'Retail & Shopping': '#ec4899',
+      'Financial Services': '#14b8a6',
+      'Health & Wellness': '#06b6d4',
+      'Entertainment': '#f97316',
+      'Travel': '#6366f1',
+      'Services': '#84cc16'
+    };
+
+    const datasets = topCategories.map(item => {
+      const color = colorMap[item.category] || '#64748b';
+      return {
+        label: item.category,
+        data: sortedMonths.map(m => item.months[m] || 0),
+        borderColor: color,
+        backgroundColor: 'transparent',
+        borderWidth: 3,
+        tension: 0.35,
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        pointBackgroundColor: color,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2
+      };
+    });
+
+    const ctx = document.getElementById('categoryTrendsOverlay');
+    if (this.charts.categoryTrendsOverlay) this.charts.categoryTrendsOverlay.destroy();
+
+    this.charts.categoryTrendsOverlay = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: sortedMonths,
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'bottom',
+            labels: {
+              font: { size: 12, weight: 600 },
+              padding: 15,
+              usePointStyle: true,
+              pointStyle: 'line'
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: 12,
+            titleFont: { size: 13, weight: 'bold' },
+            bodyFont: { size: 12 },
+            bodySpacing: 6,
+            callbacks: {
+              label: (context) => {
+                return `${context.dataset.label}: ${this.fmt.format(context.parsed.y)}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: {
+              font: { size: 11, weight: 600 },
+              maxRotation: 0,
+              minRotation: 0
+            }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(0, 0, 0, 0.05)' },
+            ticks: {
+              callback: (value) => '$' + (value / 1000).toFixed(0) + 'k',
+              font: { size: 11 }
+            }
+          }
+        }
+      }
+    });
+  },
+
+  renderCategoryDrivers(data, total) {
+    const groupStats = {};
+    data.forEach(d => {
+      if (!groupStats[d.group]) {
+        groupStats[d.group] = { total: 0, count: 0, merchants: new Set() };
+      }
+      groupStats[d.group].total += d.amount;
+      groupStats[d.group].count += 1;
+      groupStats[d.group].merchants.add(d.name);
+    });
+
+    const sorted = Object.entries(groupStats)
+      .map(([group, stats]) => ({
+        group,
+        total: stats.total,
+        percent: (stats.total / total * 100).toFixed(1),
+        count: stats.count,
+        avgPerTx: stats.total / stats.count,
+        merchants: Array.from(stats.merchants).slice(0, 2)
+      }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 6);
+
+    const colors = {
+      'Transportation': { border: '#4A5568', bg: '#EDF2F7' },
+      'Dining & Cafes': { border: '#718096', bg: '#E2E8F0' },
+      'Groceries': { border: '#2D3748', bg: '#F7FAFC' },
+      'Subscriptions': { border: '#A0AEC0', bg: '#F7FAFC' },
+      'Bills & Utilities': { border: '#ED8936', bg: '#FEEBC8' },
+      'Retail & Shopping': { border: '#CBD5E0', bg: '#F7FAFC' },
+      'Financial Services': { border: '#E2E8F0', bg: '#F7FAFC' },
+      'Health & Wellness': { border: '#718096', bg: '#EDF2F7' },
+      'Entertainment': { border: '#A0AEC0', bg: '#F7FAFC' },
+      'Travel': { border: '#4A5568', bg: '#EDF2F7' },
+      'Services': { border: '#CBD5E0', bg: '#F7FAFC' }
+    };
+
+    document.getElementById('driverGrid').innerHTML = sorted.map(item => {
+      const color = colors[item.group] || { border: '#94a3b8', bg: '#f1f5f9' };
+      const topMerchants = item.merchants.join(', ');
+
+      return `
+        <div class="driver-card" style="border-color: ${color.border}; background: ${color.bg};">
+          <div class="driver-title">${item.group}</div>
+          <div class="driver-amount">${this.fmt.format(item.total)}</div>
+          <div class="driver-percent">${item.percent}% of total · ${item.count} transactions</div>
+          <div class="driver-details">
+            Avg ${this.fmtDec.format(item.avgPerTx)}/tx · Top: ${topMerchants}
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  renderSankey(data, total) {
+    const container = document.getElementById('sankeyChart');
+    container.innerHTML = '';
+    const width = container.clientWidth;
+    const height = 900;
+
+    const groups = {};
+    const cats = {};
+
+    data.forEach(d => {
+      groups[d.group] = (groups[d.group] || 0) + d.amount;
+      cats[`${d.group}|${d.category}`] = (cats[`${d.group}|${d.category}`] || 0) + d.amount;
+    });
+
+    const colorMap = {
+      'Transportation': '#3b82f6',
+      'Dining & Cafes': '#f59e0b',
+      'Groceries': '#10b981',
+      'Subscriptions': '#8b5cf6',
+      'Bills & Utilities': '#ef4444',
+      'Retail & Shopping': '#ec4899',
+      'Financial Services': '#14b8a6',
+      'Health & Wellness': '#06b6d4',
+      'Entertainment': '#f97316',
+      'Travel': '#6366f1',
+      'Services': '#84cc16'
+    };
+
+    const categoryIcons = {
+      'Transportation': '🚗',
+      'Dining & Cafes': '🍽️',
+      'Groceries': '🛒',
+      'Subscriptions': '📱',
+      'Bills & Utilities': '💡',
+      'Retail & Shopping': '🛍️',
+      'Financial Services': '💳',
+      'Health & Wellness': '🏥',
+      'Entertainment': '🎬',
+      'Travel': '✈️',
+      'Services': '🔧'
+    };
+
+    // Build nodes and links without "Total Outflow" root
+    const nodes = [];
+    const nodeMap = {};
+    const links = [];
+
+    const getNode = (name, color) => {
+      if (nodeMap[name] === undefined) {
+        nodeMap[name] = nodes.length;
+        nodes.push({ name, color });
+      }
+      return nodeMap[name];
+    };
+
+    // Create group and category nodes
+    Object.entries(groups).sort((a, b) => b[1] - a[1]).forEach(([grp, val]) => {
+      if (val < total * 0.01) return;
+      const color = colorMap[grp] || '#64748b';
+      const gIdx = getNode(grp, color);
+
+      Object.entries(cats).filter(([k]) => k.startsWith(grp + '|')).forEach(([k, cVal]) => {
+        if (cVal < total * 0.005) return;
+        const cName = k.split('|')[1];
+        const cIdx = getNode(cName, color);
+        links.push({ source: gIdx, target: cIdx, value: cVal });
+      });
+    });
+
+    const svg = d3.select(container).append("svg").attr("width", width).attr("height", height);
+    const sankey = d3.sankey()
+      .nodeWidth(40)
+      .nodePadding(30)
+      .nodeAlign(d3.sankeyLeft)
+      .extent([[40, 40], [width - 250, height - 40]]);
+
+    const graph = sankey({
+      nodes: nodes.map(d => ({ ...d })),
+      links: links.map(d => ({ ...d }))
+    });
+
+    // Draw links with smooth curves
+    const link = svg.append("g").attr("fill", "none").attr("stroke-opacity", 0.4)
+      .selectAll("path").data(graph.links).join("path")
+      .attr("d", d3.sankeyLinkHorizontal())
+      .attr("stroke", d => d.source.color)
+      .attr("stroke-width", d => Math.max(2, d.width))
+      .style("transition", "all 0.3s")
+      .on("mouseover", function () { d3.select(this).attr("stroke-opacity", 0.7); })
+      .on("mouseout", function () { d3.select(this).attr("stroke-opacity", 0.4); });
+
+    link.append("title").text(d => `${d.source.name} → ${d.target.name}\n${this.fmt.format(d.value)}`);
+
+    // Draw nodes with straight edges (no rounded corners on left column)
+    const node = svg.append("g").selectAll("rect").data(graph.nodes).join("rect")
+      .attr("x", d => d.x0)
+      .attr("y", d => d.y0)
+      .attr("height", d => d.y1 - d.y0)
+      .attr("width", d => d.x1 - d.x0)
+      .attr("fill", d => d.color)
+      .attr("rx", d => d.depth === 0 ? 0 : 4)
+      .style("cursor", "pointer")
+      .on("mouseover", (e, d) => {
+        link.attr("stroke-opacity", l => (l.source.name === d.name || l.target.name === d.name) ? 0.7 : 0.1);
+      })
+      .on("mouseout", () => {
+        link.attr("stroke-opacity", 0.4);
+      });
+
+    node.append("title").text(d => `${d.name}\n${this.fmt.format(d.value)}`);
+
+    // Add labels with amounts
+    svg.append("g").attr("font-family", "'Inter', sans-serif").attr("font-size", 12).attr("font-weight", 600)
+      .selectAll("text").data(graph.nodes).join("text")
+      .attr("x", d => d.x0 < width / 2 ? d.x1 + 10 : d.x0 - 10)
+      .attr("y", d => (d.y1 + d.y0) / 2)
+      .attr("dy", "0.35em")
+      .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
+      .each(function(d) {
+        const icon = categoryIcons[d.name.trim()] || '';
+        const displayName = d.name.trim();
+        const pct = ((d.value / total) * 100).toFixed(1);
+
+        const text = d3.select(this);
+        text.append("tspan")
+          .attr("x", d.x0 < width / 2 ? d.x1 + 10 : d.x0 - 10)
+          .attr("font-weight", 700)
+          .text(icon ? `${icon} ${displayName}` : displayName);
+
+        text.append("tspan")
+          .attr("x", d.x0 < width / 2 ? d.x1 + 10 : d.x0 - 10)
+          .attr("dy", "1.2em")
+          .attr("font-size", 11)
+          .attr("font-weight", 500)
+          .attr("fill", "#6b7280")
+          .text(`${this.fmt.format(d.value)} (${pct}%)`);
+      }.bind(this))
+      .style("pointer-events", "none")
+      .style("fill", "#1A202C");
+  },
+
+  renderPareto(data) {
+    const ctx = document.getElementById('paretoChart');
+    if (this.charts.pareto) this.charts.pareto.destroy();
+
+    const merchants = {};
+    let total = 0;
+    data.forEach(d => {
+      merchants[d.name] = (merchants[d.name] || 0) + d.amount;
+      total += d.amount;
+    });
+
+    const sorted = Object.entries(merchants).sort((a, b) => b[1] - a[1]);
+    const top20 = sorted.slice(0, 20);
+
+    let cum = 0;
+    const labels = [];
+    const values = [];
+    const percentages = [];
+
+    top20.forEach(([name, val]) => {
+      cum += val;
+      labels.push(name);
+      values.push(val);
+      percentages.push((cum / total) * 100);
+    });
+
+    this.charts.pareto = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Cumulative %',
+            data: percentages,
+            type: 'line',
+            borderColor: '#ef4444',
+            borderWidth: 2,
+            yAxisID: 'y1',
+            pointRadius: 2
+          },
+          {
+            label: 'Spent Amount',
+            data: values,
+            backgroundColor: '#3b82f6',
+            yAxisID: 'y',
+            borderRadius: 4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        scales: {
+          y: { type: 'linear', position: 'left', beginAtZero: true },
+          y1: { type: 'linear', position: 'right', min: 0, max: 100, grid: { drawOnChartArea: false } }
+        }
+      }
+    });
+  },
+
+  renderTrend(spend, income) {
+    const ctx = document.getElementById('trendChart');
+    if (this.charts.trend) this.charts.trend.destroy();
+
+    const group = (arr) => {
+      const m = {};
+      arr.forEach(d => {
+        const k = d.date.toLocaleString('default', { month: 'short', year: '2-digit' });
+        m[k] = (m[k] || 0) + d.amount;
+      });
+      return m;
+    };
+
+    const sM = group(spend);
+    const iM = group(income);
+    const keys = Array.from(new Set([...Object.keys(sM), ...Object.keys(iM)]))
+      .sort((a, b) => new Date('01 ' + a.replace('-', ' ')) - new Date('01 ' + b.replace('-', ' ')));
+
+    this.charts.trend = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: keys,
+        datasets: [
+          { label: 'Outflow', data: keys.map(k => sM[k] || 0), backgroundColor: '#ef4444', borderRadius: 4 },
+          { label: 'Income', data: keys.map(k => iM[k] || 0), backgroundColor: '#10b981', borderRadius: 4 }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  },
+
+  renderTables(spend, all) {
+    const merch = {};
+    spend.forEach(d => {
+      if (!merch[d.name]) merch[d.name] = { val: 0, cat: d.category };
+      merch[d.name].val += d.amount;
+    });
+    const sorted = Object.entries(merch).sort((a, b) => b[1].val - a[1].val).slice(0, 50);
+
+    document.querySelector('#recurTable tbody').innerHTML = sorted.map(([name, data]) => `
+      <tr>
+        <td><div style="font-weight:600">${name}</div></td>
+        <td><span class="pill" style="background:#f1f5f9; color:#64748b">${data.cat}</span></td>
+        <td class="amt">${this.fmt.format(data.val)}</td>
+      </tr>
+    `).join('');
+
+    document.querySelector('#txTable tbody').innerHTML = all
+      .slice(0, 100).map(d => `
+      <tr>
+        <td style="color:#64748b">${d.date.toLocaleDateString()}</td>
+        <td style="font-weight:500">${d.name}</td>
+        <td><span class="pill" style="background:#3b82f620; color:#3b82f6">${d.group}</span></td>
+        <td class="amt" style="color:${d.type === 'in' ? '#10b981' : '#ef4444'}">
+          ${d.type === 'in' ? '+' : ''}${this.fmt.format(d.amount)}
+        </td>
+      </tr>
+    `).join('');
+  }
+};
+
+window.onload = () => App.init();
+</script>
+</body>
+</html>
